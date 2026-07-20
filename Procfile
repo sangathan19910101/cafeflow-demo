@@ -1,1 +1,1 @@
-web: gunicorn cafeflow.wsgi:application --bind 0.0.0.0:$PORT
+web: gunicorn cafeflow.wsgi

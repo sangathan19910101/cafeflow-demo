@@ -3,5 +3,5 @@ services:
     name: cafeflow
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn cafeflow.wsgi:application --bind 0.0.0.0:$PORT
+    startCommand: gunicorn cafeflow.wsgi
     plan: free
