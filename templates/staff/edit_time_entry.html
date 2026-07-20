@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load nepali_date %}
+{% block title %}Edit Time Entry{% endblock %}
+{% block page_icon %}clock{% endblock %}
+{% block page_title %}Edit Time Entry{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Edit Time Entry - {{ entry.staff.user.get_full_name }}</h2>
+  <a href="{% url 'time_clock' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+<div class="card">
+<form method="post">
+  {% csrf_token %}
+  <div class="grid-2">
+    <div class="form-group">
+      <label>Clock In</label>
+      <input type="datetime-local" name="clock_in" value="{{ entry.clock_in|date:'Y-m-d' }}T{{ entry.clock_in|time:'H:i' }}" required>
+    </div>
+    <div class="form-group">
+      <label>Clock Out</label>
+      <input type="datetime-local" name="clock_out" value="{% if entry.clock_out %}{{ entry.clock_out|date:'Y-m-d' }}T{{ entry.clock_out|time:'H:i' }}{% endif %}">
+      <small class="text-muted">Leave blank if still clocked in</small>
+    </div>
+  </div>
+  <div class="grid-3">
+    <div class="form-group">
+      <label>Total Hours</label>
+      <input type="number" name="total_hours" step="0.01" min="0" max="24" value="{{ entry.total_hours }}">
+    </div>
+    <div class="form-group">
+      <label>Overtime Hours</label>
+      <input type="number" name="overtime_hours" step="0.01" min="0" value="{{ entry.overtime_hours }}">
+    </div>
+    <div class="form-group">
+      <label>&nbsp;</label>
+      <label style="display:flex;align-items:center;gap:8px;padding-top:4px;">
+        <input type="checkbox" name="is_approved" {% if entry.is_approved %}checked{% endif %} style="width:auto;">
+        Approved
+      </label>
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Notes</label>
+    <textarea name="notes" rows="2">{{ entry.notes|default:"" }}</textarea>
+  </div>
+  <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Save</button>
+</form>
+</div>
+{% endblock %}

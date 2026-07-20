@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block page_icon %}cash-register{% endblock %}
+{% block page_title %}Open Cash Register{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Open Cash Register</h2>
+  <a href="{% url 'cash_register_list' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Register Name</label>
+        <input type="text" name="name" value="Main Register" required>
+      </div>
+      <div class="form-group">
+        <label>Branch</label>
+        <select name="branch" required>
+          <option value="">Select Branch...</option>
+          {% for b in branches %}<option value="{{ b.id }}">{{ b.name }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Opening Balance (Rs.)</label>
+      <input type="number" name="opening_balance" step="0.01" min="0" value="0" required>
+    </div>
+    <button type="submit" class="btn btn-success"><i class="fas fa-door-open"></i> Open Register</button>
+    <a href="{% url 'cash_register_list' %}" class="btn btn-outline">Cancel</a>
+  </form>
+</div>
+{% endblock %}

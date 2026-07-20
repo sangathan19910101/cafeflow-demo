@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block page_icon %}cash-register{% endblock %}
+{% block page_title %}Register Detail{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>{{ register.name }}</h2>
+  <a href="{% url 'cash_register_list' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+<div class="grid-2">
+  <div class="card">
+    <h3>Details</h3>
+    <p><strong>Branch:</strong> {{ register.branch.name }}</p>
+    <p><strong>Opening Balance:</strong> Rs. {{ register.opening_balance|floatformat:2 }}</p>
+    <p><strong>Closing Balance:</strong> {% if register.closing_balance %}Rs. {{ register.closing_balance|floatformat:2 }}{% else %}-{% endif %}</p>
+    <p><strong>Status:</strong> {% if register.status == 'OPEN' %}<span class="badge badge-success">Open</span>{% else %}<span class="badge badge-gray">Closed</span>{% endif %}</p>
+    <p><strong>Opened:</strong> {{ register.opened_at|date:"d M Y H:i" }} by {{ register.opened_by.get_full_name }}</p>
+    {% if register.closed_at %}<p><strong>Closed:</strong> {{ register.closed_at|date:"d M Y H:i" }} by {{ register.closed_by.get_full_name }}</p>{% endif %}
+  </div>
+  <div class="card">
+    <h3>Cash Movements</h3>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Type</th><th>Amount</th><th>Reference</th><th>Date</th></tr>
+        {% for m in movements %}
+        <tr>
+          <td><span class="badge {% if m.movement_type == 'IN' %}badge-success{% elif m.movement_type == 'OUT' %}badge-danger{% else %}badge-primary{% endif %}">{{ m.get_movement_type_display }}</span></td>
+          <td>Rs. {{ m.amount|floatformat:2 }}</td>
+          <td>{{ m.reference|default:"-" }}</td>
+          <td>{{ m.created_at|date:"d M H:i" }}</td>
+        </tr>
+        {% empty %}<tr><td colspan="4" class="text-muted">No movements recorded.</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

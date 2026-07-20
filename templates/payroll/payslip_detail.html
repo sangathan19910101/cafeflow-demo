@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Payslip {{ payslip.staff.employee_id }}{% endblock %}
+{% block page_icon %}file-invoice-dollar{% endblock %}
+{% block page_title %}Payslip{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Payslip: {{ payslip.staff.user.get_full_name }} ({{ payslip.staff.employee_id }})</h2>
+  <a href="{% url 'payslip_list' payslip.period.id %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-icon" style="color:var(--primary);"><i class="fas fa-calendar-alt"></i></div>
+    <h3>{{ payslip.period.name }}</h3>
+    <p>Period ({{ payslip.period.start_date }} to {{ payslip.period.end_date }})</p>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon" style="color:var(--teal);"><i class="fas fa-clock"></i></div>
+    <h3>{{ payslip.hours_worked }}h</h3>
+    <p>Hours Worked</p>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon" style="color:var(--success);"><i class="fas fa-coins"></i></div>
+    <h3>Rs. {{ payslip.net_pay|floatformat:0 }}</h3>
+    <p>Net Pay</p>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon" style="color:var(--warning);"><i class="fas fa-tag"></i></div>
+    <h3>{{ payslip.status }}</h3>
+    <p>Status</p>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+  <div class="card">
+    <h3><i class="fas fa-plus-circle" style="color:var(--success);"></i> Earnings</h3>
+    <table style="font-size:13px;">
+      <tr><td style="width:140px;color:var(--text-muted);">Base Salary</td><td class="text-right"><strong>Rs. {{ payslip.base_pay|floatformat:2 }}</strong></td></tr>
+      <tr><td style="color:var(--text-muted);">Overtime Pay</td><td class="text-right"><strong>Rs. {{ payslip.overtime_pay|floatformat:2 }}</strong></td></tr>
+      {% if payslip.allowances.all %}
+      <tr><td colspan="2"><hr></td></tr>
+      <tr><td colspan="2"><strong>Allowances</strong></td></tr>
+      {% for a in payslip.allowances.all %}
+      <tr><td style="color:var(--text-muted);padding-left:12px;">{{ a.allowance_type.name }}</td><td class="text-right">Rs. {{ a.amount|floatformat:2 }}</td></tr>
+      {% endfor %}
+      {% endif %}
+      <tr><td colspan="2"><hr></td></tr>
+      <tr style="font-weight:700;font-size:14px;">
+        <td>Total Earnings</td>
+        <td class="text-right">Rs. {{ payslip.base_pay|add:payslip.overtime_pay|add:payslip.total_allowances|floatformat:2 }}</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3><i class="fas fa-minus-circle" style="color:var(--danger);"></i> Deductions</h3>
+    <table style="font-size:13px;">
+      {% if payslip.deductions.all %}
+      {% for d in payslip.deductions.all %}
+      <tr>
+        <td style="width:140px;color:var(--text-muted);">{{ d.deduction_type.name }}</td>
+        <td class="text-right">Rs. {{ d.amount|floatformat:2 }}</td>
+      </tr>
+      {% if d.description %}<tr><td colspan="2" style="font-size:11px;color:var(--text-muted);padding-left:12px;">{{ d.description }}</td></tr>{% endif %}
+      {% endfor %}
+      <tr><td colspan="2"><hr></td></tr>
+      {% endif %}
+      <tr><td style="color:var(--text-muted);">Income Tax</td><td class="text-right">Rs. {{ payslip.tax_amount|floatformat:2 }}</td></tr>
+      <tr><td colspan="2"><hr></td></tr>
+      <tr style="font-weight:700;font-size:14px;">
+        <td>Total Deductions</td>
+        <td class="text-right" style="color:var(--danger);">Rs. {{ payslip.total_deductions|add:payslip.tax_amount|floatformat:2 }}</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div class="card" style="text-align:center;">
+  <h2 style="margin:0;">
+    Net Payable: <span style="color:{% if payslip.net_pay > 0 %}var(--success){% else %}var(--danger){% endif %};">Rs. {{ payslip.net_pay|floatformat:2 }}</span>
+  </h2>
+  <p style="margin-top:8px;color:var(--text-muted);">
+    Status: <span class="badge {% if payslip.status == 'PAID' %}badge-success{% elif payslip.status == 'APPROVED' %}badge-primary{% else %}badge-warning{% endif %}">{{ payslip.status }}</span>
+    {% if payslip.payment_reference %}| Ref: {{ payslip.payment_reference }}{% endif %}
+    {% if payslip.paid_at %}| Paid: {{ payslip.paid_at|date:"d M Y" }}{% endif %}
+  </p>
+</div>
+{% endblock %}

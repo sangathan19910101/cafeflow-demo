@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}
+Floors
+{% endblock %}
+{% block page_icon %}layer-group{% endblock %}
+{% block page_title %}Floor Management{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <h2>Floor Management</h2>
+
+    <a href="{% url 'create_floor' %}" class="btn btn-success">
+        + Create Floor
+    </a>
+
+</div>
+
+<div class="card">
+
+    {% if floors %}
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>Floor</th>
+
+                <th>Branch</th>
+
+                <th>Grid Size</th>
+
+                <th>Status</th>
+
+                <th width="220">
+                    Actions
+                </th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for floor in floors %}
+
+            <tr>
+
+                <td>
+                    {{ floor.name }}
+                </td>
+
+                <td>
+                    {{ floor.branch.name }}
+                </td>
+
+                <td>
+                    {{ floor.rows }} × {{ floor.columns }}
+                </td>
+
+                <td>
+
+                    {% if floor.is_active %}
+
+                    <span class="badge badge-success">
+                        Active
+                    </span>
+
+                    {% else %}
+
+                    <span class="badge badge-danger">
+                        Inactive
+                    </span>
+
+                    {% endif %}
+
+                </td>
+
+                <td>
+
+                    <div class="action-group">
+
+                        <a href="{% url 'edit_floor' floor.id %}" class="btn btn-primary">
+                            Edit
+                        </a>
+
+                        <a href="{% url 'floor_layout' floor.id %}" class="btn btn-info">
+                            Layout
+                        </a>
+
+                        {% if floor.is_active %}
+
+                        <a href="{% url 'toggle_floor' floor.id %}" class="btn btn-danger">
+                            Deactivate
+                        </a>
+
+                        {% else %}
+
+                        <a href="{% url 'toggle_floor' floor.id %}" class="btn btn-success">
+                            Activate
+                        </a>
+
+                        {% endif %}
+
+                    </div>
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% else %}
+
+    <p>
+        No floors found.
+    </p>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

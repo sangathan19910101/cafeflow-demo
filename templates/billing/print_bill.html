@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Print Bill{% endblock %}
+{% block page_icon %}print{% endblock %}
+{% block page_title %}Print Bill{% endblock %}
+{% block content %}
+<style>
+  @media print {
+    .sidebar, .topbar, .btn, .no-print, .topbar-actions, .sidebar-footer, nav, header, .message { display: none !important; }
+    .content { padding: 0 !important; }
+    .print-bill { box-shadow: none !important; border: none !important; }
+    @page { margin: 10mm; }
+    body { font-size: 11px; }
+  }
+  .print-bill { max-width: 320px; margin: 0 auto; padding: 20px; font-family: 'Courier New', monospace; }
+  .print-bill h2 { text-align: center; font-size: 18px; margin: 0 0 4px; }
+  .print-bill .shop-info { text-align: center; font-size: 11px; color: #555; margin-bottom: 12px; }
+  .print-bill .divider { border-top: 1px dashed #333; margin: 8px 0; }
+  .print-bill table { width: 100%; font-size: 11px; border-collapse: collapse; }
+  .print-bill td { padding: 2px 0; }
+  .print-bill .item-qty { text-align: center; width: 40px; }
+  .print-bill .item-name { padding-left: 4px; }
+  .print-bill .item-price { text-align: right; width: 70px; }
+  .print-bill .total-row td { font-weight: bold; padding-top: 4px; }
+  .print-bill .total-row .item-price { border-top: 1px solid #333; }
+  .print-bill .paid-row td { font-weight: bold; }
+  .print-bill .footer { text-align: center; font-size: 10px; color: #888; margin-top: 12px; }
+</style>
+<div class="no-print" style="text-align:center;margin-bottom:16px;">
+  <button onclick="window.print()" class="btn btn-primary"><i class="fas fa-print"></i> Print</button>
+  <a href="{% url 'bill_detail' bill.id %}" class="btn btn-outline">Back</a>
+</div>
+<div class="print-bill">
+  <h2>CafeFlow</h2>
+  <div class="shop-info">
+    {{ bill.branch.name|default:"Restaurant" }}<br>
+    {% if bill.session %}{{ bill.session.table.floor.branch.name }} - {{ bill.session.table.floor.name }}{% endif %}
+  </div>
+  <div style="font-size:10px;text-align:center;">
+    Bill #{{ bill.bill_number }}<br>
+    {{ bill.generated_at|date:"d M Y H:i" }}
+  </div>
+  <div class="divider"></div>
+  <table>
+    <tr><td class="item-qty">Qty</td><td class="item-name">Item</td><td class="item-price">Price</td></tr>
+    <tr><td colspan="3"><div class="divider" style="margin:2px 0;"></div></td></tr>
+    {% if bill.session %}
+    {% for order in bill.session.orders.all %}
+    {% for item in order.items.all %}
+    <tr>
+      <td class="item-qty">{{ item.quantity }}</td>
+      <td class="item-name">{{ item.menu_item.name }}</td>
+      <td class="item-price">Rs. {{ item.line_total|floatformat:2 }}</td>
+    </tr>
+    {% endfor %}
+    {% endfor %}
+    {% endif %}
+    {% for item in bill.quick_items.all %}
+    <tr>
+      <td class="item-qty">{{ item.quantity }}</td>
+      <td class="item-name">{{ item.item_name }}</td>
+      <td class="item-price">Rs. {{ item.line_total|floatformat:2 }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <div class="divider"></div>
+  <table>
+    <tr><td>Subtotal</td><td class="item-price">Rs. {{ bill.subtotal|floatformat:2 }}</td></tr>
+    {% if bill.discount_amount %}<tr><td>Discount</td><td class="item-price">-Rs. {{ bill.discount_amount|floatformat:2 }}</td></tr>{% endif %}
+    <tr><td>Tax (13%)</td><td class="item-price">Rs. {{ bill.tax_amount|floatformat:2 }}</td></tr>
+    {% if bill.tip_amount %}<tr><td>Tip</td><td class="item-price">Rs. {{ bill.tip_amount|floatformat:2 }}</td></tr>{% endif %}
+    <tr class="total-row"><td>Grand Total</td><td class="item-price">Rs. {{ bill.grand_total|floatformat:2 }}</td></tr>
+    {% for p in payments %}
+    <tr class="paid-row"><td>Paid ({{ p.payment_method }})</td><td class="item-price">Rs. {{ p.amount_paid|floatformat:2 }}</td></tr>
+    {% endfor %}
+    {% if balance > 0 %}
+    <tr class="total-row"><td>Balance Due</td><td class="item-price" style="color:#dc2626;">Rs. {{ balance|floatformat:2 }}</td></tr>
+    {% endif %}
+  </table>
+  <div class="divider"></div>
+  <div class="footer">Thank you for your visit!<br>Powered by CafeFlow</div>
+</div>
+{% endblock %}

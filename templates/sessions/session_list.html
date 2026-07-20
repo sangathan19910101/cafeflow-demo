@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Active Sessions{% endblock %}
+{% block page_icon %}chair{% endblock %}
+{% block page_title %}Active Sessions{% endblock %}
+{% block content %}
+<div class="page-header"><h2>Active Dining Sessions</h2><a href="{% url 'select_floor' %}" class="btn btn-success"><i class="fas fa-plus"></i> Start Session</a></div>
+<div class="card">
+  {% if sessions %}
+  <div class="table-wrap"><table>
+    <tr><th>Table</th><th>Branch</th><th>Floor</th><th>Status</th><th>Opened</th><th>Action</th></tr>
+    {% for session in sessions %}
+    <tr>
+      <td><strong>{{ session.table.name }}</strong></td>
+      <td>{{ session.table.floor.branch.name }}</td>
+      <td>{{ session.table.floor.name }}</td>
+      <td><span class="badge badge-success">OPEN</span></td>
+      <td>{{ session.opened_at|timesince }} ago</td>
+      <td><a class="btn btn-primary btn-sm" href="{% url 'session_detail' session.id %}">Open</a></td>
+    </tr>
+    {% endfor %}
+  </table></div>
+  {% else %}<p class="text-muted">No active sessions found. Start a session from the Tables page.</p>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Populate Segment{% endblock %}
+{% block page_icon %}filter{% endblock %}
+{% block page_title %}Populate Segment: {{ segment.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Populate: {{ segment.name }}</h2>
+  <a href="{% url 'segment_list' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+<div class="card">
+  <h3>Current Rules</h3>
+  {% if segment.rules %}
+  <code style="white-space:pre-wrap;display:block;padding:12px;background:#f8fafc;border-radius:8px;margin-bottom:12px;">{{ segment.rules|safe }}</code>
+  {% else %}
+  <p class="text-muted">No rules defined. Use the form below to set filter rules.</p>
+  {% endif %}
+  <p><strong>Current Customers:</strong> {{ segment.customers.count }}</p>
+</div>
+<div class="card">
+  <h3>Set Rules & Populate</h3>
+  <form method="post">
+    {% csrf_token %}
+    <p style="color:var(--text-muted);margin-bottom:12px;">
+      Enter filter rules as JSON. Supported keys: <code>min_visits</code>, <code>min_spent</code>, <code>is_vip</code>, <code>tags</code>, <code>gender</code>.
+    </p>
+    <div class="form-group">
+      <label>Rules (JSON)</label>
+      <textarea name="rules" rows="6" required placeholder='{"min_visits": 5, "min_spent": 5000, "is_vip": true}' style="font-family:monospace;">{{ segment.rules|safe }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-success"><i class="fas fa-sync-alt"></i> Populate Segment</button>
+    <a href="{% url 'segment_list' %}" class="btn btn-outline">Cancel</a>
+  </form>
+</div>
+{% endblock %}

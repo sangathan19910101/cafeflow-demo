@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}API Marketplace{% endblock %}
+{% block page_icon %}plug{% endblock %}
+{% block page_title %}API Marketplace{% endblock %}
+{% block content %}
+<div class="page-header"><h2>API Marketplace & Integrations</h2></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+  <div class="card">
+    <h3>Connected Apps</h3>
+    <table><tr><th>App</th><th>Provider</th><th>Type</th><th>Status</th></tr>
+      {% for app in apps %}<tr><td>{{ app.name }}</td><td>{{ app.provider }}</td><td>{{ app.app_type }}</td><td>{% if app.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-danger">Inactive</span>{% endif %}</td></tr>
+      {% empty %}<tr><td colspan="4">No apps connected.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+  <div class="card">
+    <h3>API Keys</h3>
+    <table><tr><th>Name</th><th>Key</th><th>User</th><th>Last Used</th><th>Status</th></tr>
+      {% for k in api_keys %}<tr><td>{{ k.name }}</td><td><code>{{ k.key|truncatechars:20 }}</code></td><td>{{ k.user.username }}</td><td>{{ k.last_used_at|timesince|default:"Never" }} ago</td><td>{% if k.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-danger">Inactive</span>{% endif %}</td></tr>
+      {% empty %}<tr><td colspan="5">No API keys generated.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+<div class="card">
+  <h3>API Documentation</h3>
+  <p>Access the interactive API docs at <a href="/api/docs/">/api/docs/</a></p>
+  <p>OpenAPI Schema: <a href="/api/schema/">/api/schema/</a></p>
+  <p>Base API URL: <code>/api/</code></p>
+</div>
+{% endblock %}

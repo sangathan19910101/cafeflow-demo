@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}
+Edit Menu Item
+{% endblock %}
+{% block page_icon %}edit{% endblock %}
+{% block page_title %}Edit Menu Item{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <h2>Edit Menu Item</h2>
+
+    <a href="{% url 'menu_list' %}" class="btn btn-primary">
+        Back to Menu
+    </a>
+
+</div>
+
+<div class="card">
+
+    <p>
+        <strong>{{ item.name }}</strong>
+    </p>
+
+    <hr>
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button type="submit" class="btn btn-success">
+            Save Changes
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

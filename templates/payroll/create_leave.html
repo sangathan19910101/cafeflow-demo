@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load nepali_date %}
+{% block page_icon %}umbrella-beach{% endblock %}
+{% block page_title %}Request Leave{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Request Leave</h2>
+  <a href="{% url 'leave_requests' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+<div class="card">
+<form method="post">
+  {% csrf_token %}
+  <div class="form-group">
+    <label>Staff Member *</label>
+    <select name="staff" required>
+      <option value="">-- Select Staff --</option>
+      {% for s in staff_list %}
+      <option value="{{ s.id }}">{{ s.user.get_full_name }} ({{ s.employee_id }})</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Leave Type *</label>
+    <select name="leave_type" required>
+      <option value="">-- Select Leave Type --</option>
+      {% for lt in leave_types %}
+      <option value="{{ lt.id }}">{{ lt.name }} ({% if lt.is_paid %}Paid{% else %}Unpaid{% endif %} - {{ lt.days_per_year }} days/yr)</option>
+      {% endfor %}
+    </select>
+    <small class="text-muted">
+      <i class="fas fa-info-circle"></i> Paid leave types are compensated; unpaid leave types deduct from salary.
+    </small>
+  </div>
+  <div class="grid-2">
+    <div class="form-group">
+      <label>Start Date *</label>
+      <input type="date" name="start_date" required>
+    </div>
+    <div class="form-group">
+      <label>End Date *</label>
+      <input type="date" name="end_date" required>
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Reason</label>
+    <textarea name="reason" rows="3" placeholder="Reason for leave request..."></textarea>
+  </div>
+  <button type="submit" class="btn btn-success"><i class="fas fa-paper-plane"></i> Submit Request</button>
+</form>
+</div>
+{% endblock %}

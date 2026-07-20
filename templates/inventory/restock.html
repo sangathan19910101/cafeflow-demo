@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Restock {{ item.name }}{% endblock %}
+{% block page_icon %}warehouse{% endblock %}
+{% block page_title %}Restock {{ item.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Restock: {{ item.name }}</h2>
+  <a href="{% url 'inventory_detail' item.id %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+<div class="card">
+  <div class="grid-2" style="margin-bottom:16px;">
+    <div><strong>Current Stock:</strong> {{ item.quantity_in_stock }} {{ item.unit.abbreviation }}</div>
+    <div><strong>Branch:</strong> {{ item.branch.name }}</div>
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label>Quantity to add</label>
+      <input type="number" name="quantity" step="0.01" min="0.01" required>
+    </div>
+    <div class="form-group">
+      <label>Notes</label>
+      <textarea name="notes" rows="2" placeholder="Optional restock notes..."></textarea>
+    </div>
+    <button type="submit" class="btn btn-success"><i class="fas fa-plus-circle"></i> Restock</button>
+    <a href="{% url 'inventory_detail' item.id %}" class="btn btn-outline">Cancel</a>
+  </form>
+</div>
+{% endblock %}

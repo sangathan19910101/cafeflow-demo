@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Receive Goods - {{ po.po_number }}{% endblock %}
+{% block page_icon %}box{% endblock %}
+{% block page_title %}Receive Goods{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Receive Goods: {{ po.po_number }}</h2>
+  <a href="{% url 'po_detail' po.id %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+<div class="card">
+  <h3>{{ po.supplier.name }} - {{ po.status }}</h3>
+  <form method="post">
+    {% csrf_token %}
+    <table>
+      <tr><th>Item</th><th>Ordered</th><th>Already Received</th><th>Receive Now</th></tr>
+      {% for po_item in po.items.all %}
+      <tr>
+        <td>{{ po_item.item.name }}</td>
+        <td>{{ po_item.quantity_ordered }}</td>
+        <td>{{ po_item.quantity_received }}</td>
+        <td>
+          <input type="number" name="qty_{{ po_item.id }}"
+                 step="0.01" min="0" value="0"
+                 max="{{ po_item.quantity_ordered|add:po_item.quantity_received|add:'0' }}"
+                 style="width:100px;">
+        </td>
+      </tr>
+      {% empty %}<tr><td colspan="4" class="text-muted">No items in this PO.</td></tr>
+      {% endfor %}
+    </table>
+    <div style="margin-top:16px;">
+      <button type="submit" class="btn btn-success"><i class="fas fa-box"></i> Record Receipt</button>
+      <a href="{% url 'po_detail' po.id %}" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

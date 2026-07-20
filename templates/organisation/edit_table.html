@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Edit Table{% endblock %}
+{% block page_icon %}edit{% endblock %}
+{% block page_title %}Edit Table{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h2>Edit Table</h2>
+  <a href="{% url 'table_list' %}" class="btn btn-outline">Back to Tables</a>
+</div>
+
+<div class="card">
+  <p><strong>Table:</strong> {{ table.name }}</p>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="{{ form.floor.id_for_label }}">Floor</label>
+      {{ form.floor }}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.name.id_for_label }}">Table Name</label>
+      {{ form.name }}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.capacity.id_for_label }}">Capacity</label>
+      {{ form.capacity }}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.shape.id_for_label }}">Shape</label>
+      {{ form.shape }}
+    </div>
+    <div class="form-group">
+      <label for="{{ form.status.id_for_label }}">Status</label>
+      {{ form.status }}
+    </div>
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+  </form>
+</div>
+
+{% endblock %}

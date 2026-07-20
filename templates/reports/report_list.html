@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block page_icon %}file-alt{% endblock %}
+{% block page_title %}Reports &amp; Exports{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Reports &amp; Exports</h2>
+  <div class="action-group">
+    <a href="?category=SALES" class="btn btn-outline btn-sm">Sales</a>
+    <a href="?category=INVENTORY" class="btn btn-outline btn-sm">Inventory</a>
+    <a href="?category=STAFF" class="btn btn-outline btn-sm">Staff</a>
+    <a href="?category=FINANCIAL" class="btn btn-outline btn-sm">Financial</a>
+    <a href="?category=CUSTOMER" class="btn btn-outline btn-sm">Customer</a>
+    <a href="?category=OPERATIONS" class="btn btn-outline btn-sm">Operations</a>
+    <a href="{% url 'report_list' %}" class="btn btn-primary btn-sm">All</a>
+    <a href="{% url 'scheduled_reports' %}" class="btn btn-primary btn-sm"><i class="fas fa-clock"></i> Scheduled</a>
+  </div>
+</div>
+
+<div class="card">
+  <h3><i class="fas fa-bolt" style="color:var(--warning);"></i> Quick Downloads</h3>
+  <p style="margin-bottom:12px;color:var(--text-muted);">Download daily or monthly reports directly.</p>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;">
+    <div>
+      <label style="font-size:11px;color:var(--text-muted);display:block;">Type</label>
+      <select id="quickCategory" style="width:auto;">
+        <option value="SALES">Sales</option>
+        <option value="FINANCIAL">Financial</option>
+        <option value="INVENTORY">Inventory</option>
+        <option value="STAFF">Staff</option>
+        <option value="OPERATIONS">Operations</option>
+      </select>
+    </div>
+    <div>
+      <label style="font-size:11px;color:var(--text-muted);display:block;">Period</label>
+      <select id="quickPeriod" style="width:auto;">
+        <option value="daily">Daily (Today)</option>
+        <option value="monthly" selected>Monthly (30 days)</option>
+      </select>
+    </div>
+    <div>
+      <label style="font-size:11px;color:var(--text-muted);display:block;">Format</label>
+      <select id="quickFormat" style="width:auto;">
+        <option value="EXCEL">Excel (.xlsx)</option>
+        <option value="PDF">PDF (.pdf)</option>
+      </select>
+    </div>
+    <button type="button" class="btn btn-success" onclick="downloadQuick()"><i class="fas fa-download"></i> Download</button>
+    <button type="button" class="btn btn-purple" onclick="downloadQuick('PDF')"><i class="fas fa-file-pdf"></i> Download PDF</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <tr><th>Name</th><th>Category</th><th>Description</th><th>Format</th><th>Action</th></tr>
+      {% for t in templates %}
+      <tr>
+        <td><strong>{{ t.name }}</strong></td>
+        <td><span class="badge badge-primary">{{ t.category }}</span></td>
+        <td>{{ t.description|truncatechars:60 }}</td>
+        <td><span class="badge badge-gray">{{ t.default_format }}</span></td>
+        <td><a href="{% url 'report_view' t.id %}" class="btn btn-primary btn-sm">Generate</a></td>
+      </tr>
+      {% empty %}<tr><td colspan="5" class="text-muted">No report templates available.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function downloadQuick(fmt) {
+  var cat = document.getElementById('quickCategory').value;
+  var period = document.getElementById('quickPeriod').value;
+  var format = fmt || document.getElementById('quickFormat').value;
+  window.location.href = "{% url 'quick_report' %}?category=" + cat + "&period=" + period + "&format=" + format;
+}
+</script>
+{% endblock %}

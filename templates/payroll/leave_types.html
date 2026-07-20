@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load nepali_date %}
+{% block page_icon %}tags{% endblock %}
+{% block page_title %}Leave Types{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Leave Types</h2>
+  <div class="action-group">
+    <a href="{% url 'create_leave_type' %}" class="btn btn-success"><i class="fas fa-plus"></i> Create Leave Type</a>
+    <a href="{% url 'leave_requests' %}" class="btn btn-outline"><i class="fas fa-list"></i> Leave Requests</a>
+  </div>
+</div>
+<div class="card">
+<div class="table-wrap">
+<table>
+  <tr>
+    <th>Name</th><th>Days/Year</th><th>Paid</th><th>Requires Approval</th><th>Active</th><th>Description</th>
+  </tr>
+  {% for lt in leave_types %}
+  <tr>
+    <td><strong>{{ lt.name }}</strong></td>
+    <td>{{ lt.days_per_year }}</td>
+    <td>
+      {% if lt.is_paid %}
+      <span class="badge badge-success"><i class="fas fa-check"></i> Paid</span>
+      {% else %}
+      <span class="badge badge-danger"><i class="fas fa-times"></i> Unpaid</span>
+      {% endif %}
+    </td>
+    <td>
+      {% if lt.requires_approval %}
+      <span class="badge badge-primary">Yes</span>
+      {% else %}
+      <span class="badge badge-gray">No</span>
+      {% endif %}
+    </td>
+    <td>
+      {% if lt.is_active %}
+      <span class="badge badge-success">Active</span>
+      {% else %}
+      <span class="badge badge-gray">Inactive</span>
+      {% endif %}
+    </td>
+    <td class="text-muted">{{ lt.description|truncatechars:60 }}</td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="6" class="text-muted">No leave types configured. <a href="{% url 'create_leave_type' %}">Create one here.</a></td></tr>
+  {% endfor %}
+</table>
+</div>
+</div>
+{% endblock %}

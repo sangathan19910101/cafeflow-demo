@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block page_icon %}sun{% endblock %}
+{% block page_title %}Run Day End{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Run Day End</h2>
+  <a href="{% url 'day_end_list' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Branch</label>
+        <select name="branch" required>
+          <option value="">Select Branch...</option>
+          {% for b in branches %}<option value="{{ b.id }}">{{ b.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Summary Date</label>
+        <input type="date" name="summary_date" value="{{ today }}">
+      </div>
+    </div>
+    <p class="text-muted mb-2">This will aggregate all sales, payments, and expenses for the selected date and branch.</p>
+    <button type="submit" class="btn btn-success"><i class="fas fa-sun"></i> Run Day End</button>
+  </form>
+</div>
+{% endblock %}

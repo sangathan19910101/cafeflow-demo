@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}
+Edit Category
+{% endblock %}
+{% block page_icon %}edit{% endblock %}
+{% block page_title %}Edit Category{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <h2>Edit Category</h2>
+
+    <a href="{% url 'category_list' %}" class="btn btn-primary">
+        Back
+    </a>
+
+</div>
+
+<div class="card">
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button type="submit" class="btn btn-success">
+            Save Changes
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

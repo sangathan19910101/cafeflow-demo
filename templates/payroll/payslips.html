@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Payslips - {{ period.name }}{% endblock %}
+{% block page_icon %}file-invoice-dollar{% endblock %}
+{% block page_title %}Payslips{% endblock %}
+{% block content %}
+<div class="page-header"><h2>Payslips: {{ period.name }}</h2></div>
+<table><tr><th>Employee</th><th>Base Pay</th><th>Overtime</th><th>Allowances</th><th>Deductions</th><th>Net Pay</th><th>Status</th><th>Action</th></tr>
+  {% for ps in payslips %}
+  <tr>
+    <td>{{ ps.staff.user.get_full_name }} ({{ ps.staff.employee_id }})</td>
+    <td>Rs. {{ ps.base_pay|floatformat:0 }}</td>
+    <td>Rs. {{ ps.overtime_pay|floatformat:0 }}</td>
+    <td>Rs. {{ ps.total_allowances|floatformat:0 }}</td>
+    <td>Rs. {{ ps.total_deductions|floatformat:0 }}</td>
+    <td><strong>Rs. {{ ps.net_pay|floatformat:0 }}</strong></td>
+    <td><span class="badge {% if ps.status == 'PAID' %}badge-success{% elif ps.status == 'APPROVED' %}badge-primary{% else %}badge-warning{% endif %}">{{ ps.status }}</span></td>
+    <td><a href="{% url 'payslip_detail' ps.id %}" class="btn btn-primary">View</a></td>
+  </tr>
+  {% empty %}<tr><td colspan="8">No payslips for this period.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

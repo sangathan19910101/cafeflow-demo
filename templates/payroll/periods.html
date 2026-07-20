@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Payroll Periods{% endblock %}
+{% block page_icon %}calendar-alt{% endblock %}
+{% block page_title %}Payroll Periods{% endblock %}
+{% block content %}
+<div class="page-header"><h2>Payroll Periods</h2><a href="{% url 'create_payroll_period' %}" class="btn btn-success"><i class="fas fa-plus"></i> Add Period</a></div>
+<table><tr><th>Name</th><th>Branch</th><th>Start</th><th>End</th><th>Status</th><th>Actions</th></tr>
+  {% for p in periods %}
+  <tr>
+    <td>{{ p.name }}</td>
+    <td>{{ p.branch.name }}</td>
+    <td>{{ p.start_date }}</td>
+    <td>{{ p.end_date }}</td>
+    <td><span class="badge {% if p.status == 'CLOSED' %}badge-success{% elif p.status == 'PROCESSING' %}badge-warning{% else %}badge-primary{% endif %}">{{ p.status }}</span></td>
+    <td class="action-group">
+      <a href="{% url 'payslip_list' p.id %}" class="btn btn-primary">View Payslips</a>
+      {% if p.status == 'OPEN' %}
+      <form method="post" action="{% url 'process_payroll' p.id %}" style="display:inline;">{% csrf_token %}<button type="submit" class="btn btn-success">Process</button></form>
+      {% endif %}
+    </td>
+  </tr>
+  {% empty %}<tr><td colspan="6">No payroll periods.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

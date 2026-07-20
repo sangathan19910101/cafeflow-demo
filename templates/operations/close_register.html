@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block page_icon %}cash-register{% endblock %}
+{% block page_title %}Close Cash Register{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Close: {{ register.name }}</h2>
+  <a href="{% url 'cash_register_list' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+<div class="grid-2">
+  <div class="card">
+    <h3>Register Summary</h3>
+    <p><strong>Branch:</strong> {{ register.branch.name }}</p>
+    <p><strong>Opened:</strong> {{ register.opened_at|date:"d M H:i" }}</p>
+    <p><strong>Opening Balance:</strong> Rs. {{ register.opening_balance|floatformat:2 }}</p>
+    <p><strong>Cash Payments:</strong> Rs. {{ total_sales|floatformat:2 }}</p>
+    <p><strong>Cash In:</strong> Rs. {{ movements_in|floatformat:2 }}</p>
+    <p><strong>Cash Out:</strong> Rs. {{ movements_out|floatformat:2 }}</p>
+    <p><strong>Expected Balance:</strong> <span style="font-size:18px;font-weight:700;">Rs. {{ expected_balance|floatformat:2 }}</span></p>
+  </div>
+  <div class="card">
+    <h3>Close Register</h3>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>Closing Balance (Rs.)</label>
+        <input type="number" name="closing_balance" step="0.01" min="0" value="{{ expected_balance|floatformat:2 }}" required>
+      </div>
+      <button type="submit" class="btn btn-danger"><i class="fas fa-door-closed"></i> Close Register</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

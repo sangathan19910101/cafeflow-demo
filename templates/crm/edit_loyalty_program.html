@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Edit Loyalty Program{% endblock %}
+{% block page_icon %}edit{% endblock %}
+{% block page_title %}Edit Loyalty Program{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Edit: {{ program.name }}</h2>
+  <a href="{% url 'loyalty_list' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" name="name" value="{{ program.name }}" required>
+      </div>
+      <div class="form-group">
+        <label>Tier</label>
+        <select name="tier" required>
+          <option value="BRONZE" {% if program.tier == 'BRONZE' %}selected{% endif %}>Bronze</option>
+          <option value="SILVER" {% if program.tier == 'SILVER' %}selected{% endif %}>Silver</option>
+          <option value="GOLD" {% if program.tier == 'GOLD' %}selected{% endif %}>Gold</option>
+          <option value="PLATINUM" {% if program.tier == 'PLATINUM' %}selected{% endif %}>Platinum</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Points per Currency Unit</label>
+        <input type="number" name="points_per_currency" step="0.01" value="{{ program.points_per_currency }}" min="0" required>
+      </div>
+      <div class="form-group">
+        <label>Minimum Spend (Rs.)</label>
+        <input type="number" name="minimum_spend" step="0.01" value="{{ program.minimum_spend }}" min="0">
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Discount Percent</label>
+        <input type="number" name="discount_percent" step="0.01" value="{{ program.discount_percent }}" min="0" max="100">
+      </div>
+      <div class="form-group">
+        <label><input type="checkbox" name="free_item_on_birthday" {% if program.free_item_on_birthday %}checked{% endif %}> Free Item on Birthday</label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label><input type="checkbox" name="is_active" {% if program.is_active %}checked{% endif %}> Active</label>
+    </div>
+    <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Save Changes</button>
+    <a href="{% url 'loyalty_list' %}" class="btn btn-outline">Cancel</a>
+  </form>
+</div>
+{% endblock %}

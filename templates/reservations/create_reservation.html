@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% load nepali_date %}
+{% block page_icon %}calendar-check{% endblock %}
+{% block page_title %}Create Reservation{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>New Reservation</h2>
+  <a href="{% url 'reservation_list' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i></a>
+</div>
+<div class="grid-2">
+  <div class="card">
+    <form method="post" id="reservationForm">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>Search Customer</label>
+        <div style="position:relative;">
+          <input type="text" id="customerSearch" placeholder="Type name or phone..." autocomplete="off">
+          <input type="hidden" name="customer_id" id="customerId">
+          <div id="customerDropdown" style="position:absolute;top:100%;left:0;right:0;max-height:180px;overflow-y:auto;background:#fff;border:1px solid var(--border);border-radius:6px;z-index:100;display:none;box-shadow:var(--shadow-lg);"></div>
+        </div>
+        <div id="selectedCustomer" style="display:none;margin-top:6px;padding:8px 12px;background:var(--primary-light);border-radius:6px;font-size:13px;">
+          <strong id="selName"></strong> &middot; <span id="selPhone"></span>
+          <span id="selVip" style="display:none;" class="badge badge-warning">VIP</span>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label>Or Enter Name</label><input type="text" name="customer_name" placeholder="New customer name"></div>
+        <div class="form-group"><label>Phone</label><input type="text" name="customer_phone" placeholder="Phone number"></div>
+      </div>
+      <div class="form-group">
+        <label>Branch</label>
+        <select name="branch" id="branchSelect" required onchange="loadTables()">
+          <option value="">-- Select --</option>
+          {% for b in branches %}
+          <option value="{{ b.id }}">{{ b.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label>Guests</label><input type="number" name="guest_count" id="guestCount" min="1" value="2" required onchange="loadTables()"></div>
+        <div class="form-group"><label>Duration (min)</label><input type="number" name="duration_minutes" value="120" min="30" step="30"></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label>Date</label><input type="date" name="reservation_date" required></div>
+        <div class="form-group"><label>Time</label><input type="time" name="reservation_time" required></div>
+      </div>
+      <div class="form-group"><label>Special Requests</label><textarea name="special_requests" rows="2"></textarea></div>
+      <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Create</button>
+    </form>
+  </div>
+  <div>
+    <div class="card">
+      <h3 style="margin:0 0 12px;">Available Tables</h3>
+      <div id="tableList"><p class="text-muted" style="font-size:13px;">Select branch & guests to view.</p></div>
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <p style="font-size:12px;color:var(--text-muted);margin:0;">
+        Today (BS): <strong>{% today_bs %}</strong><br>
+        Tables assigned upon reservation creation & confirmation.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var searchInput = document.getElementById('customerSearch');
+  var dropdown = document.getElementById('customerDropdown');
+  var customerId = document.getElementById('customerId');
+  var selectedDiv = document.getElementById('selectedCustomer');
+  var selName = document.getElementById('selName');
+  var selPhone = document.getElementById('selPhone');
+  var selVip = document.getElementById('selVip');
+  var timeout = null;
+
+  searchInput.addEventListener('input', function() {
+    clearTimeout(timeout);
+    var q = this.value.trim();
+    if (q.length < 1) { dropdown.style.display = 'none'; return; }
+    timeout = setTimeout(function() {
+      fetch('/reservations/customers/lookup/?q=' + encodeURIComponent(q))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          dropdown.innerHTML = '';
+          if (!data.customers.length) {
+            dropdown.innerHTML = '<div style="padding:8px 12px;color:var(--text-muted);font-size:13px;">No results</div>';
+          } else {
+            data.customers.forEach(function(c) {
+              var d = document.createElement('div');
+              d.style.cssText = 'padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);';
+              d.innerHTML = '<strong>' + c.name + '</strong> &middot; ' + c.phone + (c.is_vip ? ' <span class="badge badge-warning" style="font-size:10px;">VIP</span>' : '');
+              d.onmouseenter = function() { this.style.background = 'var(--primary-light)'; };
+              d.onmouseleave = function() { this.style.background = ''; };
+              d.onclick = function() {
+                customerId.value = c.id;
+                selName.textContent = c.name;
+                selPhone.textContent = c.phone;
+                document.querySelector('input[name="customer_name"]').value = c.name;
+                document.querySelector('input[name="customer_phone"]').value = c.phone;
+                selVip.style.display = c.is_vip ? 'inline' : 'none';
+                selectedDiv.style.display = 'block';
+                searchInput.value = '';
+                dropdown.style.display = 'none';
+              };
+              dropdown.appendChild(d);
+            });
+          }
+          dropdown.style.display = 'block';
+        });
+    }, 250);
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) dropdown.style.display = 'none';
+  });
+});
+
+function loadTables() {
+  var branch = document.getElementById('branchSelect').value;
+  var guests = document.getElementById('guestCount').value || 1;
+  var container = document.getElementById('tableList');
+  if (!branch) { container.innerHTML = '<p class="text-muted" style="font-size:13px;">Select a branch.</p>'; return; }
+  fetch('/reservations/tables/available/?branch=' + branch + '&guests=' + guests)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.tables.length) {
+        container.innerHTML = '<p class="text-muted" style="font-size:13px;">No matching tables available.</p>';
+        return;
+      }
+      var html = '';
+      data.tables.forEach(function(t) {
+        html += '<label style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--border);border-radius:6px;margin-bottom:6px;cursor:pointer;transition:background .1s;">';
+        html += '<input type="checkbox" name="tables" value="' + t.id + '" style="width:auto;">';
+        html += '<span><strong>' + t.name + '</strong> <span class="text-muted" style="font-size:12px;">(' + t.floor + ' &middot; ' + t.capacity + ' seats)</span></span>';
+        html += '</label>';
+      });
+      container.innerHTML = html;
+      container.querySelectorAll('label').forEach(function(l) {
+        l.onmouseenter = function() { this.style.background = 'var(--primary-light)'; };
+        l.onmouseleave = function() { this.style.background = ''; };
+        l.onclick = function() {
+          var cb = this.querySelector('input[type="checkbox"]');
+          cb.checked = !cb.checked;
+        };
+      });
+    });
+}
+</script>
+{% endblock %}

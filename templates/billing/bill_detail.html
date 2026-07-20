@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Bill Details{% endblock %}
+{% block page_icon %}receipt{% endblock %}
+{% block page_title %}Bill Details{% endblock %}
+{% block content %}
+<div class="page-header"><h2>Bill #{{ bill.id|truncatechars:12 }}</h2></div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
+  <div class="card">
+    <h3>Order Details</h3>
+    {% if bill.session %}
+    <p><strong>Table:</strong> {{ bill.session.table.name }}</p>
+    <p><strong>Branch:</strong> {{ bill.session.table.floor.branch.name }}</p>
+    {% endif %}
+    <p><strong>Sale Type:</strong> <span class="badge badge-primary">{{ bill.sale_type }}</span></p>
+    <p><strong>Date:</strong> {{ bill.generated_at }}</p>
+
+    {% if bill.session %}
+    <h4 style="margin-top:16px;">Items</h4>
+    <table>
+      <tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+      {% for order in bill.session.orders.all %}
+        {% for item in order.items.all %}
+        <tr>
+          <td>{{ item.menu_item.name }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>Rs. {{ item.price_snapshot|floatformat:2 }}</td>
+          <td>Rs. {{ item.line_total|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+      {% endfor %}
+    </table>
+    {% endif %}
+    {% if bill.quick_items.exists %}
+    <h4>Quick Sale Items</h4>
+    <table><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+      {% for item in bill.quick_items.all %}
+      <tr><td>{{ item.item_name }}</td><td>{{ item.quantity }}</td><td>Rs. {{ item.unit_price|floatformat:2 }}</td><td>Rs. {{ item.line_total|floatformat:2 }}</td></tr>
+      {% endfor %}
+    </table>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h3>Bill Summary</h3>
+    <table>
+      <tr><td>Subtotal</td><td style="text-align:right;">Rs. {{ bill.subtotal|floatformat:2 }}</td></tr>
+      {% if bill.discount_amount %}<tr><td>Discount</td><td style="text-align:right;color:var(--danger);">-Rs. {{ bill.discount_amount|floatformat:2 }}</td></tr>{% endif %}
+      {% if bill.coupon_code %}<tr><td>Coupon</td><td style="text-align:right;"><span class="badge badge-warning">{{ bill.coupon_code }}</span></td></tr>{% endif %}
+      <tr><td>Tax (13%)</td><td style="text-align:right;">Rs. {{ bill.tax_amount|floatformat:2 }}</td></tr>
+      {% if bill.tip_amount %}<tr><td>Tip</td><td style="text-align:right;">Rs. {{ bill.tip_amount|floatformat:2 }}</td></tr>{% endif %}
+      <tr style="font-weight:700;font-size:16px;"><td>Grand Total</td><td style="text-align:right;">Rs. {{ bill.grand_total|floatformat:2 }}</td></tr>
+    </table>
+
+    {% if not bill.coupon_code and paid_total == 0 %}
+    <h4 style="margin-top:16px;">Apply Coupon</h4>
+    {% if valid_coupons %}
+    <form method="post" action="{% url 'apply_coupon' bill.id %}" style="display:flex;gap:8px;">
+      {% csrf_token %}
+      <select name="coupon_code" style="flex:1;" required>
+        <option value="">Select a coupon...</option>
+        {% for c in valid_coupons %}
+        <option value="{{ c.code }}">{{ c.code }} - {{ c.get_discount_type_display }} {% if c.discount_type == 'PERCENTAGE' %}{{ c.discount_value }}%{% else %}Rs.{{ c.discount_value }}{% endif %} off</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn btn-warning btn-sm">Apply</button>
+    </form>
+    {% else %}
+    <p class="text-muted" style="font-size:12px;">No valid coupons available for this order.</p>
+    {% endif %}
+    {% endif %}
+
+    <h4 style="margin-top:16px;">Payments ({{ payments|length }})</h4>
+    {% for p in payments %}
+    <p>{{ p.payment_method }}: Rs. {{ p.amount_paid|floatformat:2 }} <small>{{ p.paid_at|timesince }} ago</small></p>
+    {% empty %}<p class="text-muted">No payments yet.</p>{% endfor %}
+
+    {% if paid_total < bill.grand_total %}
+    <p style="color:var(--danger);font-weight:600;">Remaining: Rs. {{ remaining|floatformat:2 }}</p>
+    {% else %}
+    <p style="color:var(--success);font-weight:600;">Fully Paid</p>
+    {% endif %}
+
+    <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px;">
+      <a href="{% url 'print_bill' bill.id %}" class="btn btn-teal"><i class="fas fa-print"></i> Print Bill</a>
+      {% if paid_total < bill.grand_total %}
+      <a href="{% url 'pay_bill' bill.id %}" class="btn btn-success">Make Payment</a>
+      {% endif %}
+      <a href="{% url 'bill_list' %}" class="btn btn-primary">Back to Bills</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

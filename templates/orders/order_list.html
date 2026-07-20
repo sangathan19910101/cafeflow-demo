@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Orders{% endblock %}
+{% block page_icon %}clipboard-list{% endblock %}
+{% block page_title %}Order Queue{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h2>Order Queue</h2>
+    <p>Track and manage kitchen orders.</p>
+</div>
+
+<div class="card">
+
+    <strong>Filter:</strong>
+
+    <a class="btn btn-primary" href="{% url 'order_list' %}">
+        All
+    </a>
+
+    <a class="btn" href="?status=DRAFT">Draft</a>
+
+    <a class="btn" href="?status=SUBMITTED">Submitted</a>
+
+    <a class="btn" href="?status=ACCEPTED">Accepted</a>
+
+    <a class="btn" href="?status=REJECTED">Rejected</a>
+
+</div>
+
+<div class="card">
+
+    {% if orders %}
+
+    <table>
+
+        <tr>
+            <th>Order</th>
+            <th>Table</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Action</th>
+        </tr>
+
+        {% for order in orders %}
+
+        <tr>
+
+            <td>{{ order.id }}</td>
+
+            <td>{{ order.session.table.name }}</td>
+
+            <td>
+
+                {% if order.status == "ACCEPTED" %}
+                <span class="badge badge-green">ACCEPTED</span>
+
+                {% elif order.status == "REJECTED" %}
+                <span class="badge badge-red">REJECTED</span>
+
+                {% else %}
+                <span class="badge badge-gray">
+                    {{ order.status }}
+                </span>
+
+                {% endif %}
+
+            </td>
+
+            <td>{{ order.created_at }}</td>
+
+            <td>
+                <a class="btn btn-primary" href="{% url 'order_detail' order.id %}">
+                    Open
+                </a>
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+    {% else %}
+
+    <p>No orders found.</p>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

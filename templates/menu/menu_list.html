@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% load roles %}
+
+{% block title %}
+Menu
+{% endblock %}
+{% block page_icon %}book-open{% endblock %}
+{% block page_title %}Menu Management{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <h2>Menu Management</h2>
+
+    <div class="action-group">
+
+        {% if request.user|has_any_group:"Admin,Manager" %}
+        <a href="{% url 'create_menu_item' %}" class="btn btn-success">
+            + Create Item
+        </a>
+        {% endif %}
+
+        <a href="{% url 'category_list' %}" class="btn btn-primary">
+            Categories
+        </a>
+
+    </div>
+
+</div>
+
+<div class="card">
+
+    <h3>Menu Items</h3>
+
+    {% if items %}
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Item</th>
+                <th>Price</th>
+                <th>Status</th>
+
+                {% if request.user|has_any_group:"Admin,Manager" %}
+                <th width="220">Actions</th>
+                {% endif %}
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for item in items %}
+
+            <tr>
+
+                <td>{{ item.category.name }}</td>
+
+                <td>{{ item.name }}</td>
+
+                <td>Rs. {{ item.price }}</td>
+
+                <td>
+
+                    {% if not item.category.is_active %}
+                    <span class="badge badge-warning">
+                        Category Disabled
+                    </span>
+
+                    {% elif item.is_available %}
+                    <span class="badge badge-success">
+                        Available
+                    </span>
+
+                    {% else %}
+                    <span class="badge badge-danger">
+                        Unavailable
+                    </span>
+                    {% endif %}
+
+                </td>
+
+                {% if request.user|has_any_group:"Admin,Manager" %}
+                <td>
+
+                    <div class="action-group">
+
+                        <a href="{% url 'edit_menu_item' item.id %}" class="btn btn-primary">
+                            Edit
+                        </a>
+
+                        {% if item.is_available %}
+                        <a href="{% url 'toggle_item_availability' item.id %}" class="btn btn-danger">
+                            Disable
+                        </a>
+                        {% else %}
+                        <a href="{% url 'toggle_item_availability' item.id %}" class="btn btn-success">
+                            Enable
+                        </a>
+                        {% endif %}
+
+                    </div>
+
+                </td>
+                {% endif %}
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% else %}
+
+    <p>No menu items found.</p>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

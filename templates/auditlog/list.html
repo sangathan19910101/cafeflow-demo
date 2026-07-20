@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Audit Logs{% endblock %}
+{% block page_icon %}history{% endblock %}
+{% block page_title %}Audit Logs{% endblock %}
+{% block content %}
+<div class="page-header"><h2>Audit Logs</h2></div>
+<div class="card">
+  <form method="get" style="display:flex;gap:10px;align-items:center;">
+    <label>Action:
+      <select name="action">
+        <option value="">All</option>
+        {% for a in action_counts %}<option value="{{ a.action }}" {% if selected_action == a.action %}selected{% endif %}>{{ a.action }} ({{ a.count }})</option>{% endfor %}
+      </select>
+    </label>
+    <label>Entity:
+      <select name="entity_type">
+        <option value="">All</option>
+        {% for e in entity_counts %}<option value="{{ e.entity_type }}" {% if selected_entity == e.entity_type %}selected{% endif %}>{{ e.entity_type }} ({{ e.count }})</option>{% endfor %}
+      </select>
+    </label>
+    <button type="submit" class="btn btn-primary">Filter</button>
+  </form>
+</div>
+<table>
+  <tr><th>User</th><th>Action</th><th>Entity</th><th>ID</th><th>IP</th><th>Time</th></tr>
+  {% for log in logs %}
+  <tr>
+    <td>{{ log.user.username|default:"System" }}</td>
+    <td><span class="badge {% if log.action == 'CREATE' %}badge-success{% elif log.action == 'DELETE' %}badge-danger{% elif log.action == 'PAYMENT' %}badge-primary{% else %}badge-gray{% endif %}">{{ log.action }}</span></td>
+    <td>{{ log.entity_type }}</td>
+    <td><code>{{ log.entity_id|truncatechars:12 }}</code></td>
+    <td>{{ log.ip_address|default:"-" }}</td>
+    <td>{{ log.created_at }}</td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="6">No audit logs found.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

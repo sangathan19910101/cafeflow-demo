@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load nepali_date %}
+{% block title %}Attendance{% endblock %}
+{% block page_icon %}clipboard-check{% endblock %}
+{% block page_title %}Attendance Report{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Attendance - {{ bs_display }}</h2>
+  <div class="action-group">
+    <form method="get" style="display:flex;gap:8px;align-items:end;">
+      <div class="form-group" style="margin:0;">
+        <label style="font-size:11px;">Date</label>
+        <input type="date" name="date" value="{{ target_date|date:'Y-m-d' }}" style="width:auto;">
+      </div>
+      <div class="form-group" style="margin:0;">
+        <label style="font-size:11px;">Branch</label>
+        <select name="branch" style="width:auto;">
+          <option value="">All</option>
+          {% for b in branches %}
+          <option value="{{ b.id }}" {% if request.GET.branch == b.id|stringformat:'s' %}selected{% endif %}>{{ b.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i> View</button>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <h3><i class="fas fa-clipboard-list"></i> Attendance for {{ bs_display }}</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Staff</th><th>Branch</th><th>Status</th><th>Clock In</th><th>Clock Out</th><th>Hours</th></tr>
+      {% for row in attendance_data %}
+      <tr>
+        <td><strong>{{ row.staff.user.get_full_name }}</strong><br><small class="text-muted">{{ row.staff.employee_id }}</small></td>
+        <td>{{ row.staff.branch.name }}</td>
+        <td>
+          {% if row.present %}
+          <span class="badge badge-success"><i class="fas fa-check"></i> Present</span>
+          {% else %}
+          <span class="badge badge-danger"><i class="fas fa-times"></i> Absent</span>
+          {% endif %}
+        </td>
+        <td>{% if row.clock_in %}{{ row.clock_in|date:"H:i" }}{% else %}-{% endif %}</td>
+        <td>{% if row.clock_out %}{{ row.clock_out|date:"H:i" }}{% elif row.clock_in %}<span class="badge badge-warning">Clocked In</span>{% else %}-{% endif %}</td>
+        <td>{% if row.entry %}{{ row.entry.total_hours }}{% else %}-{% endif %}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="text-muted">No active staff found.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}

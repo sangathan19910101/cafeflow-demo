@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Kitchen Display{% endblock %}
+{% block page_icon %}fire-burner{% endblock %}
+{% block page_title %}Kitchen Display{% endblock %}
+{% block content %}
+<h2>Kitchen Display System</h2>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:15px;">
+  <div class="card"><h3 style="color:var(--warning);">Pending ({{ pending|length }})</h3>
+    {% for e in pending %}<div style="border:1px solid var(--border);padding:10px;margin:5px 0;border-radius:8px;">
+      <strong>{{ e.order.session.table.name }}</strong><br>
+      <small>{{ e.order.created_at|timesince }} ago</small>
+      {% for item in e.order.items.all %}<div>{{ item.quantity }}x {{ item.menu_item.name }}</div>{% endfor %}
+      <form method="post" action="{% url 'kds_start' e.id %}" style="margin-top:5px;">{% csrf_token %}<button type="submit" class="btn btn-primary">Start Preparing</button></form>
+    </div>{% empty %}<p>No pending orders.</p>{% endfor %}
+  </div>
+  <div class="card"><h3 style="color:var(--primary);">Preparing ({{ preparing|length }})</h3>
+    {% for e in preparing %}<div style="border:1px solid var(--border);padding:10px;margin:5px 0;border-radius:8px;">
+      <strong>{{ e.order.session.table.name }}</strong><br>
+      <small>Started {{ e.started_at|timesince }} ago</small>
+      {% for item in e.order.items.all %}<div>{{ item.quantity }}x {{ item.menu_item.name }}</div>{% endfor %}
+      <form method="post" action="{% url 'kds_ready' e.id %}" style="margin-top:5px;">{% csrf_token %}<button type="submit" class="btn btn-success">Mark Ready</button></form>
+    </div>{% empty %}<p>No orders being prepared.</p>{% endfor %}
+  </div>
+  <div class="card"><h3 style="color:var(--success);">Ready ({{ ready|length }})</h3>
+    {% for e in ready %}<div style="border:1px solid var(--border);padding:10px;margin:5px 0;border-radius:8px;background:#dcfce7;">
+      <strong>{{ e.order.session.table.name }}</strong><br>
+      {% for item in e.order.items.all %}<div>{{ item.quantity }}x {{ item.menu_item.name }}</div>{% endfor %}
+      <form method="post" action="{% url 'kds_served' e.id %}" style="margin-top:5px;">{% csrf_token %}<button type="submit" class="btn btn-primary">Mark Served</button></form>
+    </div>{% empty %}<p>No ready orders.</p>{% endfor %}
+  </div>
+  <div class="card"><h3 style="color:var(--muted);">Served ({{ served|length }})</h3>
+    {% for e in served %}<div style="border:1px solid var(--border);padding:10px;margin:5px 0;border-radius:8px;color:var(--muted);">
+      <strong>{{ e.order.session.table.name }}</strong><br>
+      <small>{{ e.completed_at|timesince }} ago</small>
+    </div>{% empty %}<p>No served orders.</p>{% endfor %}
+  </div>
+</div>
+<meta http-equiv="refresh" content="15">
+{% endblock %}

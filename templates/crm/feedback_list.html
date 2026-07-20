@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Customer Feedback{% endblock %}
+{% block page_icon %}star{% endblock %}
+{% block page_title %}Customer Feedback{% endblock %}
+{% block content %}
+<div class="page-header"><h2>Customer Feedback</h2></div>
+<table><tr><th>Customer</th><th>Rating</th><th>Branch</th><th>Comment</th><th>Date</th></tr>
+  {% for fb in feedbacks %}
+  <tr><td>{{ fb.customer.name }}</td><td>{{ fb.rating }}/5</td><td>{{ fb.branch.name|default:"-" }}</td><td>{{ fb.comment|truncatechars:100 }}</td><td>{{ fb.created_at }}</td></tr>
+  {% empty %}<tr><td colspan="5">No feedback recorded.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

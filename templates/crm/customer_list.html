@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load nepali_date %}
+{% block title %}Customers{% endblock %}
+{% block page_icon %}users{% endblock %}
+{% block page_title %}Customers{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Customers</h2>
+  <div class="action-group" style="flex-wrap:wrap;">
+    <form method="get" style="display:flex;gap:8px;align-items:end;">
+      <input type="text" name="search" placeholder="Search name or phone..." value="{{ request.GET.search }}" style="width:200px;">
+      <button type="submit" class="btn btn-primary btn-sm">Search</button>
+      <a href="{% url 'customer_list' %}" class="btn btn-outline btn-sm">Clear</a>
+    </form>
+    <a href="{% url 'customer_list' %}?vip=1" class="btn btn-warning btn-sm {% if request.GET.vip %}active{% endif %}">VIP Only</a>
+    <a href="{% url 'loyalty_list' %}" class="btn btn-purple btn-sm"><i class="fas fa-crown"></i> Loyalty</a>
+    <a href="{% url 'feedback_list' %}" class="btn btn-teal btn-sm"><i class="fas fa-star"></i> Feedback</a>
+    <a href="{% url 'send_communication' %}" class="btn btn-info btn-sm"><i class="fas fa-envelope"></i> Send Message</a>
+    <a href="{% url 'create_customer' %}" class="btn btn-success"><i class="fas fa-plus"></i> Add</a>
+  </div>
+</div>
+<div class="card"><div class="table-wrap">
+<table>
+  <tr><th>Name</th><th>Phone</th><th>Visits</th><th>Spent</th><th>Last Visit</th><th>Status</th></tr>
+  {% for c in customers %}
+  <tr>
+    <td><a href="{% url 'customer_detail' c.id %}"><strong>{{ c.name }}</strong></a></td>
+    <td>{{ c.phone }}</td>
+    <td>{{ c.visit_count }}</td>
+    <td>Rs. {{ c.total_spent|floatformat:0 }}</td>
+    <td>{{ c.last_visit|timesince|default:"-" }} ago</td>
+    <td>{% if c.is_vip %}<span class="badge badge-warning">VIP</span>{% endif %}{% if c.is_blacklisted %}<span class="badge badge-danger">BL</span>{% endif %}</td>
+  </tr>
+  {% empty %}<tr><td colspan="6" class="text-muted">No customers.</td></tr>
+  {% endfor %}
+</table>
+</div></div>
+{% endblock %}

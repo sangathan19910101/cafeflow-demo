@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ supplier.name }}{% endblock %}
+{% block page_icon %}truck{% endblock %}
+{% block page_title %}{{ supplier.name }}{% endblock %}
+{% block content %}
+<div class="page-header"><h2>{{ supplier.name }}</h2><a href="{% url 'edit_supplier' supplier.id %}" class="btn btn-primary"><i class="fas fa-edit"></i> Edit</a></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+  <div class="card">
+    <h3>Details</h3>
+    <p><strong>Company:</strong> {{ supplier.company|default:"-" }}</p>
+    <p><strong>Phone:</strong> {{ supplier.phone }}</p>
+    <p><strong>Email:</strong> {{ supplier.email|default:"-" }}</p>
+    <p><strong>Tax ID:</strong> {{ supplier.tax_id|default:"-" }}</p>
+    <p><strong>Payment Terms:</strong> {{ supplier.payment_terms|default:"-" }}</p>
+    <p><strong>Lead Time:</strong> {{ supplier.lead_time_days }} days</p>
+    <p><strong>Status:</strong> <span class="badge badge-success">{{ supplier.status }}</span></p>
+  </div>
+  <div class="card">
+    <h3>Pricing</h3>
+    {% for p in supplier.pricing.all %}<p>{{ p.item.name }}: Rs. {{ p.unit_price|floatformat:2 }} (Min: {{ p.minimum_order_qty }})</p>{% empty %}<p>No pricing defined.</p>{% endfor %}
+  </div>
+</div>
+<div class="card">
+  <h3>Contacts</h3>
+  <table><tr><th>Name</th><th>Designation</th><th>Phone</th><th>Primary</th></tr>
+    {% for c in supplier.contacts.all %}<tr><td>{{ c.name }}</td><td>{{ c.designation|default:"-" }}</td><td>{{ c.phone }}</td><td>{% if c.is_primary %}<span class="badge badge-primary">Primary</span>{% endif %}</td></tr>
+    {% empty %}<tr><td colspan="4">No contacts.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+<div class="card">
+  <h3>Recent Purchase Orders</h3>
+  <table><tr><th>PO #</th><th>Date</th><th>Amount</th><th>Status</th><th>Action</th></tr>
+    {% for po in pos %}<tr><td>{{ po.po_number }}</td><td>{{ po.order_date }}</td><td>Rs. {{ po.grand_total|floatformat:0 }}</td><td><span class="badge">{{ po.status }}</span></td><td><a href="{% url 'po_detail' po.id %}" class="btn btn-primary">View</a></td></tr>
+    {% empty %}<tr><td colspan="5">No purchase orders.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Send Communication{% endblock %}
+{% block page_icon %}envelope{% endblock %}
+{% block page_title %}Send Communication{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Send Communication{% if customer %} to {{ customer.name }}{% endif %}</h2>
+  <a href="{% url 'customer_list' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label>Channel</label>
+      <select name="channel" required>
+        <option value="SMS">SMS</option>
+        <option value="EMAIL">Email</option>
+        <option value="WHATSAPP">WhatsApp</option>
+        <option value="IN_APP">In-App Notification</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Subject</label>
+      <input type="text" name="subject" required placeholder="e.g. Special Offer for VIP Customers">
+    </div>
+    <div class="form-group">
+      <label>Message</label>
+      <textarea name="message" rows="4" required placeholder="Type your message here..."></textarea>
+    </div>
+    {% if not customer_id %}
+    <div class="form-group">
+      <label>Recipients (leave empty for all)</label>
+      <select name="customers" multiple style="height:150px;">
+        {% for c in customers %}
+        <option value="{{ c.id }}">{{ c.name }} ({{ c.phone }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Or send to Segment</label>
+      {% if segments %}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        {% for s in segments %}
+        <span class="badge badge-primary">{{ s.name }} ({{ s.customers.count }})</span>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-muted">No segments defined.</p>
+      {% endif %}
+    </div>
+    {% endif %}
+    <button type="submit" class="btn btn-success"><i class="fas fa-paper-plane"></i> Send</button>
+    <a href="{% url 'customer_list' %}" class="btn btn-outline">Cancel</a>
+  </form>
+</div>
+{% endblock %}

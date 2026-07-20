@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Create Loyalty Program{% endblock %}
+{% block page_icon %}crown{% endblock %}
+{% block page_title %}Create Loyalty Program{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>New Loyalty Program</h2>
+  <a href="{% url 'loyalty_list' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" name="name" required>
+      </div>
+      <div class="form-group">
+        <label>Tier</label>
+        <select name="tier" required>
+          <option value="BRONZE">Bronze</option>
+          <option value="SILVER">Silver</option>
+          <option value="GOLD">Gold</option>
+          <option value="PLATINUM">Platinum</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Points per Currency Unit</label>
+        <input type="number" name="points_per_currency" step="0.01" value="1" min="0" required>
+        <small style="color:var(--text-muted);">Points earned per Rs. 1 spent</small>
+      </div>
+      <div class="form-group">
+        <label>Minimum Spend (Rs.)</label>
+        <input type="number" name="minimum_spend" step="0.01" value="0" min="0">
+        <small style="color:var(--text-muted);">Minimum spend to join this program</small>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Discount Percent</label>
+        <input type="number" name="discount_percent" step="0.01" value="0" min="0" max="100">
+        <small style="color:var(--text-muted);">Loyalty discount percentage</small>
+      </div>
+      <div class="form-group">
+        <label><input type="checkbox" name="free_item_on_birthday"> Free Item on Birthday</label>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Create Program</button>
+    <a href="{% url 'loyalty_list' %}" class="btn btn-outline">Cancel</a>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block page_icon %}chart-pie{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block topbar_actions %}
+<a href="{% url 'session_list' %}" class="btn btn-primary btn-sm"><i class="fas fa-chair"></i> Sessions</a>
+<a href="{% url 'order_list' %}" class="btn btn-primary btn-sm"><i class="fas fa-clipboard-list"></i> Orders</a>
+<a href="{% url 'kds_dashboard' %}" class="btn btn-primary btn-sm"><i class="fas fa-kitchen-set"></i> KDS</a>
+<a href="{% url 'bill_list' %}" class="btn btn-primary btn-sm"><i class="fas fa-receipt"></i> Billing</a>
+{% endblock %}
+{% block content %}
+
+<div class="kpi-grid">
+  <div class="kpi-card"><div class="kpi-icon" style="color:var(--success);"><i class="fas fa-rupee-sign"></i></div><h3>Rs. {{ total_revenue|floatformat:0 }}</h3><p>Total Revenue</p></div>
+  <div class="kpi-card"><div class="kpi-icon" style="color:var(--primary);"><i class="fas fa-calendar-day"></i></div><h3>Rs. {{ today_revenue|floatformat:0 }}</h3><p>Today's Revenue</p></div>
+  <div class="kpi-card"><div class="kpi-icon" style="color:var(--warning);"><i class="fas fa-door-open"></i></div><h3>{{ open_session_count }}</h3><p>Open Sessions</p></div>
+  <div class="kpi-card"><div class="kpi-icon" style="color:var(--success);"><i class="fas fa-check-circle"></i></div><h3>{{ available_table_count }}</h3><p>Available Tables</p></div>
+  <div class="kpi-card"><div class="kpi-icon" style="color:var(--danger);"><i class="fas fa-users"></i></div><h3>{{ occupied_table_count }}</h3><p>Occupied Tables</p></div>
+  <div class="kpi-card"><div class="kpi-icon" style="color:var(--purple);"><i class="fas fa-clock"></i></div><h3>{{ pending_orders }}</h3><p>Pending Orders</p></div>
+  <div class="kpi-card"><div class="kpi-icon" style="color:var(--teal);"><i class="fas fa-chart-bar"></i></div><h3>{{ today_orders_count }}</h3><p>Orders Today</p></div>
+  {% if low_stock_count > 0 %}
+  <div class="kpi-card"><div class="kpi-icon" style="color:var(--danger);"><i class="fas fa-exclamation-triangle"></i></div><h3>{{ low_stock_count }}</h3><p>Low Stock Items</p></div>
+  {% endif %}
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h3><i class="fas fa-chair" style="color:var(--primary);"></i> Active Sessions</h3>
+    {% if active_sessions %}
+    <div class="table-wrap"><table><tr><th>Table</th><th>Branch</th><th>Since</th><th>Action</th></tr>
+      {% for s in active_sessions %}
+      <tr><td>{{ s.table.name }}</td><td>{{ s.table.floor.branch.name }}</td><td>{{ s.opened_at|timesince }} ago</td><td><a href="{% url 'session_detail' s.id %}" class="btn btn-primary btn-sm">Open</a></td></tr>
+      {% endfor %}
+    </table></div>
+    {% else %}<p class="text-muted">No active sessions.</p>{% endif %}
+  </div>
+
+  <div class="card">
+    <h3><i class="fas fa-clipboard-list" style="color:var(--warning);"></i> Recent Orders</h3>
+    {% if recent_orders %}
+    <div class="table-wrap"><table><tr><th>Table</th><th>Status</th><th>Time</th><th>Action</th></tr>
+      {% for o in recent_orders %}
+      <tr><td>{{ o.session.table.name }}</td><td><span class="badge {% if o.status == 'ACCEPTED' %}badge-success{% elif o.status == 'SUBMITTED' %}badge-warning{% elif o.status == 'REJECTED' %}badge-danger{% else %}badge-gray{% endif %}">{{ o.status }}</span></td><td>{{ o.created_at|timesince }} ago</td><td><a href="{% url 'order_detail' o.id %}" class="btn btn-primary btn-sm">View</a></td></tr>
+      {% endfor %}
+    </table></div>
+    {% else %}<p class="text-muted">No recent orders.</p>{% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <h3><i class="fas fa-credit-card" style="color:var(--success);"></i> Recent Payments</h3>
+  {% if recent_payments %}
+  <div class="table-wrap"><table><tr><th>Method</th><th>Amount</th><th>Paid</th><th>Action</th></tr>
+    {% for p in recent_payments %}
+    <tr><td><span class="badge badge-primary">{{ p.payment_method }}</span></td><td><strong>Rs. {{ p.amount_paid|floatformat:2 }}</strong></td><td>{{ p.paid_at|timesince }} ago</td><td><a href="{% url 'bill_detail' p.bill.id %}" class="btn btn-primary btn-sm">View</a></td></tr>
+    {% endfor %}
+  </table></div>
+  {% else %}<p class="text-muted">No payments recorded.</p>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Stock Units{% endblock %}
+{% block page_icon %}ruler{% endblock %}
+{% block page_title %}Stock Units{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Stock Units</h2>
+  <div class="action-group">
+    <a href="{% url 'inventory_unit_create' %}" class="btn btn-success"><i class="fas fa-plus"></i> Add Unit</a>
+    <a href="{% url 'inventory_list' %}" class="btn btn-outline">Back to Inventory</a>
+  </div>
+</div>
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <tr><th>Name</th><th>Abbreviation</th></tr>
+      {% for u in units %}
+      <tr><td><strong>{{ u.name }}</strong></td><td>{{ u.abbreviation }}</td></tr>
+      {% empty %}
+      <tr><td colspan="2" class="text-muted">No units defined. Create one to start adding inventory items.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}

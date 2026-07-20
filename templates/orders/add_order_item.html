@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Add Item{% endblock %}
+{% block page_icon %}clipboard-list{% endblock %}
+{% block page_title %}Add Item To Order{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Add Item To Order</h2>
+  <a href="{% url 'order_detail' order.id %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Add Item</button>
+  </form>
+</div>
+{% endblock %}

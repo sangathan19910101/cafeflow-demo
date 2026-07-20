@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load nepali_date %}
+{% block title %}Shift Calendar{% endblock %}
+{% block page_icon %}calendar-alt{% endblock %}
+{% block page_title %}Shift Calendar{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>{{ bs_date }}</h2>
+  <div class="action-group">
+    <a href="?date={{ prev_date|date:'Y-m-d' }}" class="btn btn-outline btn-sm"><i class="fas fa-chevron-left"></i> Previous</a>
+    <a href="?date={% now 'Y-m-d' %}" class="btn btn-primary btn-sm"><i class="fas fa-calendar-day"></i> Today</a>
+    <a href="?date={{ next_date|date:'Y-m-d' }}" class="btn btn-outline btn-sm">Next <i class="fas fa-chevron-right"></i></a>
+    <a href="{% url 'create_shift' %}" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> New Template</a>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-bottom:20px;">
+  <div class="card">
+    <h3><i class="fas fa-user-plus"></i> Assign Shift (Single Day)</h3>
+    <form method="post" action="{% url 'assign_shift' %}">
+      {% csrf_token %}
+      <input type="hidden" name="date" value="{{ target_date|date:'Y-m-d' }}">
+      <div class="form-group">
+        <label>Staff Member</label>
+        <select name="staff" required>
+          <option value="">-- Select Staff --</option>
+          {% for s in staff_list %}
+          <option value="{{ s.id }}">{{ s.user.get_full_name }} ({{ s.employee_id }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Shift Template</label>
+        <select name="template" required>
+          <option value="">-- Select Shift --</option>
+          {% for t in templates %}
+          <option value="{{ t.id }}">{{ t.name }} ({{ t.start_time|time:"H:i" }} - {{ t.end_time|time:"H:i" }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-check"></i> Assign</button>
+    </form>
+  </div>
+  <div class="card">
+    <h3><i class="fas fa-calendar-plus"></i> Bulk Assign (Date Range)</h3>
+    <form method="post" action="{% url 'bulk_assign_shifts' %}">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>Staff Member</label>
+        <select name="staff" required>
+          <option value="">-- Select Staff --</option>
+          {% for s in staff_list %}
+          <option value="{{ s.id }}">{{ s.user.get_full_name }} ({{ s.employee_id }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Shift Template</label>
+        <select name="template" required>
+          <option value="">-- Select Shift --</option>
+          {% for t in templates %}
+          <option value="{{ t.id }}">{{ t.name }} ({{ t.start_time|time:"H:i" }} - {{ t.end_time|time:"H:i" }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label>Start Date</label><input type="date" name="start_date" required></div>
+        <div class="form-group"><label>End Date</label><input type="date" name="end_date" required></div>
+      </div>
+      <div class="form-group">
+        <label>Repeat Days</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+          <label style="font-size:12px;"><input type="checkbox" name="repeat_days" value="0"> Sun</label>
+          <label style="font-size:12px;"><input type="checkbox" name="repeat_days" value="1" checked> Mon</label>
+          <label style="font-size:12px;"><input type="checkbox" name="repeat_days" value="2" checked> Tue</label>
+          <label style="font-size:12px;"><input type="checkbox" name="repeat_days" value="3" checked> Wed</label>
+          <label style="font-size:12px;"><input type="checkbox" name="repeat_days" value="4" checked> Thu</label>
+          <label style="font-size:12px;"><input type="checkbox" name="repeat_days" value="5" checked> Fri</label>
+          <label style="font-size:12px;"><input type="checkbox" name="repeat_days" value="6"> Sat</label>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-calendar-check"></i> Bulk Assign</button>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <h3><i class="fas fa-list-ul"></i> Shifts for {{ bs_date }}</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Staff</th><th>Shift</th><th>Time</th><th>Branch</th><th>Confirmed</th></tr>
+      {% for sh in shifts %}
+      <tr>
+        <td><a href="{% url 'staff_detail' sh.staff.id %}">{{ sh.staff.user.get_full_name }} ({{ sh.staff.employee_id }})</a></td>
+        <td>{{ sh.template.name }}</td>
+        <td>{{ sh.template.start_time|time:"H:i" }} - {{ sh.template.end_time|time:"H:i" }}</td>
+        <td>{{ sh.template.branch.name }}</td>
+        <td>{% if sh.is_confirmed %}<span class="badge badge-success"><i class="fas fa-check"></i> Confirmed</span>{% else %}<span class="badge badge-warning">Pending</span>{% endif %}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="text-muted">No shifts assigned for this date.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}

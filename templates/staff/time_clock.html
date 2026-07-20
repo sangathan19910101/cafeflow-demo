@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load nepali_date %}
+{% load roles %}
+{% block title %}Time Clock{% endblock %}
+{% block page_icon %}clock{% endblock %}
+{% block page_title %}Time Clock{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Time Clock - {% today_bs %}</h2>
+  <div class="action-group">
+    <a href="{% url 'attendance_report' %}" class="btn btn-outline btn-sm"><i class="fas fa-clipboard-check"></i> Attendance Report</a>
+  </div>
+</div>
+
+<div class="card">
+  <h3><i class="fas fa-clock"></i> Quick Clock In</h3>
+  <form method="post" action="{% url 'clock_in' %}">
+    {% csrf_token %}
+    <div style="display:flex;gap:12px;align-items:end;">
+      <div class="form-group" style="flex:1;margin:0;">
+        <label>Staff Member</label>
+        <select name="staff_id" required style="width:100%;">
+          <option value="">-- Select Staff --</option>
+          {% for s in active_staff %}
+          <option value="{{ s.id }}">{{ s.user.get_full_name }} ({{ s.employee_id }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-success"><i class="fas fa-sign-in-alt"></i> Clock In</button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <h3><i class="fas fa-list-ul"></i> Today's Entries</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Staff</th><th>Clock In</th><th>Clock Out</th><th>Hours</th><th>Overtime</th><th>Status</th><th>Action</th></tr>
+      {% for e in entries %}
+      <tr>
+        <td><strong>{{ e.staff.user.get_full_name }}</strong></td>
+        <td>{{ e.clock_in|time:"H:i" }}</td>
+        <td>{{ e.clock_out|time:"H:i"|default:"-" }}</td>
+        <td>{{ e.total_hours }}</td>
+        <td>{{ e.overtime_hours }}</td>
+        <td>{% if e.clock_out %}<span class="badge badge-success">Completed</span>{% else %}<span class="badge badge-warning">Active</span>{% endif %}</td>
+        <td class="action-group">
+          {% if not e.clock_out %}
+          <a href="{% url 'clock_out' e.id %}" class="btn btn-danger btn-sm"><i class="fas fa-sign-out-alt"></i></a>
+          {% endif %}
+          {% if request.user|has_any_group:"Admin" %}
+          <a href="{% url 'edit_time_entry' e.id %}" class="btn btn-outline btn-sm"><i class="fas fa-edit"></i></a>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="text-muted">No entries for today. Use the form above to clock in staff.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}
+

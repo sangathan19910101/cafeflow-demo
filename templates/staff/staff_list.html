@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load nepali_date %}
+{% block title %}Staff Management{% endblock %}
+{% block page_icon %}user-tie{% endblock %}
+{% block page_title %}Staff Management{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Staff Management</h2>
+  <div class="action-group">
+    <a href="?status=ACTIVE" class="btn btn-success btn-sm">Active</a>
+    <a href="?status=ON_LEAVE" class="btn btn-warning btn-sm">On Leave</a>
+    <a href="{% url 'staff_list' %}" class="btn btn-outline btn-sm">All</a>
+    <a href="{% url 'shift_calendar' %}" class="btn btn-primary btn-sm"><i class="fas fa-calendar-alt"></i> Shifts</a>
+    <a href="{% url 'time_clock' %}" class="btn btn-primary btn-sm"><i class="fas fa-clock"></i> Time Clock</a>
+    <a href="{% url 'monthly_payout' %}" class="btn btn-teal btn-sm"><i class="fas fa-calculator"></i> Payout</a>
+    <a href="{% url 'create_staff' %}" class="btn btn-success"><i class="fas fa-plus"></i> Add Staff</a>
+  </div>
+</div>
+<div class="card">
+<div class="table-wrap">
+<table>
+  <tr>
+    <th>ID</th><th>Name</th><th>Designation</th><th>Department</th><th>Branch</th>
+    <th>Salary</th><th>Status</th><th>Action</th>
+  </tr>
+  {% for s in staff %}
+  <tr>
+    <td><code>{{ s.employee_id }}</code></td>
+    <td><strong>{{ s.user.get_full_name }}</strong></td>
+    <td>{{ s.designation }}</td>
+    <td>{{ s.department.name|default:"-" }}</td>
+    <td>{{ s.branch.name }}</td>
+    <td>Rs. {{ s.monthly_salary|floatformat:0 }}</td>
+    <td>
+      <span class="badge {% if s.status == 'ACTIVE' %}badge-success{% elif s.status == 'ON_LEAVE' %}badge-warning{% elif s.status == 'TERMINATED' %}badge-danger{% else %}badge-gray{% endif %}">{{ s.status }}</span>
+    </td>
+    <td><a href="{% url 'staff_detail' s.id %}" class="btn btn-sm btn-primary"><i class="fas fa-eye"></i> View</a></td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="8" class="text-muted">No staff found.</td></tr>
+  {% endfor %}
+</table>
+</div>
+</div>
+{% endblock %}

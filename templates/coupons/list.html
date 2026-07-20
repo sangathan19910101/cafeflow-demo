@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Coupons &amp; Discounts{% endblock %}
+{% block page_icon %}tags{% endblock %}
+{% block page_title %}Coupons &amp; Discounts{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Coupons &amp; Discounts</h2>
+  <a href="{% url 'create_coupon' %}" class="btn btn-success"><i class="fas fa-plus"></i> Create Coupon</a>
+</div>
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <tr>
+        <th>Code</th><th>Type</th><th>Value</th><th>Min Order</th><th>Uses</th><th>Valid</th><th>Status</th>
+      </tr>
+      {% for coupon in coupons %}
+      <tr>
+        <td><strong>{{ coupon.code }}</strong></td>
+        <td><span class="badge badge-primary">{{ coupon.get_discount_type_display }}</span></td>
+        <td>{{ coupon.discount_value }}{% if coupon.discount_type == 'PERCENTAGE' %}%{% elif coupon.discount_type == 'FIXED' %} Rs.{% endif %}</td>
+        <td>Rs. {{ coupon.minimum_order_amount }}</td>
+        <td>{{ coupon.current_uses }}/{{ coupon.max_uses|default:"&#8734;" }}</td>
+        <td>{{ coupon.valid_from|date:"d M Y" }} - {{ coupon.valid_until|date:"d M Y" }}</td>
+        <td>{% if coupon.is_valid %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-danger">Inactive</span>{% endif %}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="text-muted">No coupons defined.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}

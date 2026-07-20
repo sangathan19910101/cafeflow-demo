@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load nepali_date %}
+{% block title %}Create Purchase Order{% endblock %}
+{% block page_icon %}file-invoice{% endblock %}
+{% block page_title %}New Purchase Order{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>New Purchase Order</h2>
+  <a href="{% url 'po_list' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+{% if not suppliers or not items %}
+<div class="message message-warning">
+  <i class="fas fa-exclamation-triangle"></i>
+  Before creating a purchase order, ensure you have set up:
+  {% if not suppliers %}<a href="{% url 'create_supplier' %}" class="btn btn-warning btn-sm">Add a Supplier</a>{% endif %}
+  {% if not items %}<a href="{% url 'create_inventory_item' %}" class="btn btn-warning btn-sm">Add Inventory Items</a>{% endif %}
+</div>
+{% endif %}
+
+<form method="post" id="poForm">
+  {% csrf_token %}
+  <div class="card">
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Supplier</label>
+        <select name="supplier" required>
+          <option value="">-- Select Supplier --</option>
+          {% for s in suppliers %}
+          <option value="{{ s.id }}">{{ s.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Branch</label>
+        <select name="branch" required>
+          <option value="">-- Select Branch --</option>
+          {% for b in branches %}
+          <option value="{{ b.id }}">{{ b.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <h3 style="margin:0;">Line Items</h3>
+      <button type="button" class="btn btn-primary btn-sm" onclick="addRow()"><i class="fas fa-plus"></i> Add Row</button>
+    </div>
+    <div id="rows">
+      {% if items %}
+      <div class="po-row" style="display:flex;gap:10px;margin-bottom:10px;align-items:end;">
+        <div style="flex:2.5;">
+          <label style="font-size:11px;color:var(--text-muted);">Item</label>
+          <select name="item" required>
+            <option value="">-- Select --</option>
+            {% for item in items %}
+            <option value="{{ item.id }}">{{ item.name }} ({{ item.category.name }}) - {{ item.unit.abbreviation }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:11px;color:var(--text-muted);">Qty</label>
+          <input type="number" name="quantity" step="0.01" min="0.01" value="1" required>
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:11px;color:var(--text-muted);">Unit Price</label>
+          <input type="number" name="unit_price" step="0.01" min="0" value="0">
+        </div>
+        <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)" style="margin-bottom:2px;" title="Remove"><i class="fas fa-times"></i></button>
+      </div>
+      {% else %}
+      <div class="message message-warning" style="display:inline-flex;width:100%;">
+        <i class="fas fa-exclamation-triangle"></i>
+        No inventory items found. <a href="{% url 'create_inventory_item' %}" class="btn btn-warning btn-sm">Add an Item</a> first.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  <div style="margin-top:16px;">
+    <button type="submit" class="btn btn-success btn-lg" {% if not items %}disabled{% endif %}><i class="fas fa-save"></i> Create Purchase Order</button>
+    <a href="{% url 'po_list' %}" class="btn btn-outline">Cancel</a>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+(function() {
+  var templateRow = null;
+  var itemsHtml = '';
+  {% if items %}
+  var firstRow = document.querySelector('.po-row');
+  if (firstRow) {
+    templateRow = firstRow;
+  }
+  {% endif %}
+
+  window.addRow = function() {
+    if (!templateRow) return;
+    var clone = templateRow.cloneNode(true);
+    clone.querySelectorAll('select, input').forEach(function(el) { el.value = ''; });
+    var qtyInput = clone.querySelector('input[name="quantity"]');
+    if (qtyInput) qtyInput.value = '1';
+    document.getElementById('rows').appendChild(clone);
+  };
+
+  window.removeRow = function(btn) {
+    var rows = document.querySelectorAll('#rows .po-row');
+    if (rows.length > 1) {
+      btn.closest('.po-row').remove();
+    }
+  };
+})();
+</script>
+{% endblock %}

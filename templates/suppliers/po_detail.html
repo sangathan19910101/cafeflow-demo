@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}PO {{ po.po_number }}{% endblock %}
+{% block page_icon %}file-invoice{% endblock %}
+{% block page_title %}Purchase Order: {{ po.po_number }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Purchase Order: {{ po.po_number }}</h2>
+  <a href="{% url 'po_list' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+<div class="grid-2">
+  <div class="card">
+    <h3>Details</h3>
+    <p><strong>Supplier:</strong> {{ po.supplier.name }}</p>
+    <p><strong>Branch:</strong> {{ po.branch.name }}</p>
+    <p><strong>Status:</strong>
+      <span class="badge {% if po.status == 'RECEIVED' %}badge-success{% elif po.status == 'CONFIRMED' %}badge-primary{% elif po.status == 'DRAFT' %}badge-warning{% elif po.status == 'CANCELLED' %}badge-danger{% else %}badge-gray{% endif %}">{{ po.get_status_display }}</span>
+    </p>
+    <p><strong>Order Date:</strong> {{ po.order_date }}</p>
+    <p><strong>Expected:</strong> {{ po.expected_date|default:"-" }}</p>
+    <p><strong>Ordered By:</strong> {{ po.ordered_by.get_full_name }}</p>
+  </div>
+  <div class="card">
+    <h3>Totals</h3>
+    <p><strong>Subtotal:</strong> Rs. {{ po.subtotal|floatformat:2 }}</p>
+    <p><strong>Shipping:</strong> Rs. {{ po.shipping_cost|floatformat:2 }}</p>
+    <p><strong>Tax:</strong> Rs. {{ po.tax_amount|floatformat:2 }}</p>
+    <p><strong>Grand Total:</strong> Rs. {{ po.grand_total|floatformat:2 }}</p>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Actions</h3>
+  <div class="action-group">
+    {% if po.status == 'DRAFT' %}
+    <form method="post" action="{% url 'confirm_po' po.id %}" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Confirm PO</button>
+    </form>
+    {% endif %}
+    {% if po.status == 'CONFIRMED' or po.status == 'SENT' or po.status == 'PARTIAL' %}
+    <a href="{% url 'receive_po' po.id %}" class="btn btn-primary"><i class="fas fa-box"></i> Receive Goods</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <h3>Items</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Item</th><th>Ordered</th><th>Received</th><th>Unit Price</th><th>Line Total</th></tr>
+      {% for item in po.items.all %}
+      <tr>
+        <td>{{ item.item.name }}</td>
+        <td>{{ item.quantity_ordered }}</td>
+        <td>{{ item.quantity_received }}</td>
+        <td>Rs. {{ item.unit_price|floatformat:2 }}</td>
+        <td>Rs. {{ item.line_total|floatformat:2 }}</td>
+      </tr>
+      {% empty %}<tr><td colspan="5" class="text-muted">No items.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+
+{% if receipts %}
+<div class="card">
+  <h3>Goods Receipts</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Date</th><th>Received By</th><th>Reference</th><th>Notes</th></tr>
+      {% for gr in receipts %}
+      <tr>
+        <td>{{ gr.received_date|date:"d M Y H:i" }}</td>
+        <td>{{ gr.received_by.get_full_name|default:"-" }}</td>
+        <td>{{ gr.reference_document|default:"-" }}</td>
+        <td>{{ gr.notes|truncatechars:60 }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block page_icon %}chart-line{% endblock %}
+{% block page_title %}Analytics & Reports{% endblock %}
+{% block topbar_actions %}
+<form method="get" class="action-group">
+  <select name="branch" style="width:auto;">
+    <option value="">All Branches</option>
+    {% for b in branches %}<option value="{{ b.id }}" {% if selected_branch == b.id|stringformat:"s" %}selected{% endif %}>{{ b.name }}</option>{% endfor %}
+  </select>
+  <select name="period" style="width:auto;">
+    <option value="7" {% if selected_period == '7' %}selected{% endif %}>7 days</option>
+    <option value="30" {% if selected_period == '30' %}selected{% endif %}>30 days</option>
+    <option value="90" {% if selected_period == '90' %}selected{% endif %}>90 days</option>
+  </select>
+  <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-filter"></i> Filter</button>
+</form>
+{% endblock %}
+{% block content %}
+
+<div class="kpi-grid">
+  <div class="kpi-card"><h3>Rs. {{ total_revenue|floatformat:0 }}</h3><p>Total Revenue</p></div>
+  <div class="kpi-card"><h3>Rs. {{ average_bill|floatformat:0 }}</h3><p>Avg Bill</p></div>
+  <div class="kpi-card"><h3>{{ total_orders }}</h3><p>Total Orders</p></div>
+  <div class="kpi-card"><h3>{{ accepted_orders }}</h3><p>Accepted ({{ acceptance_rate }}%)</p></div>
+  <div class="kpi-card" style="border-left:3px solid var(--success);"><h3>{{ open_sessions_count }}</h3><p>Open Sessions</p></div>
+  <div class="kpi-card" style="border-left:3px solid var(--primary);"><h3>{{ closed_sessions_count }}</h3><p>Closed</p></div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h3><i class="fas fa-calendar-day" style="color:var(--primary);"></i> Revenue Trend</h3>
+    <div class="table-wrap"><table><tr><th>Date</th><th>Revenue</th></tr>
+      {% for r in revenue_trend %}<tr><td>{{ r.revenue_date }}</td><td><strong>Rs. {{ r.daily_revenue|floatformat:2 }}</strong></td></tr>
+      {% empty %}<tr><td colspan="2" class="text-muted">No data for selected period.</td></tr>{% endfor %}
+    </table></div>
+  </div>
+  <div class="card">
+    <h3><i class="fas fa-fire" style="color:var(--warning);"></i> Top Selling Items</h3>
+    <div class="table-wrap"><table><tr><th>Item</th><th>Qty Sold</th></tr>
+      {% for item in top_selling_items %}<tr><td>{{ item.menu_item__name }}</td><td><strong>{{ item.total_quantity }}</strong></td></tr>
+      {% empty %}<tr><td colspan="2" class="text-muted">No data.</td></tr>{% endfor %}
+    </table></div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h3><i class="fas fa-layer-group" style="color:var(--purple);"></i> Category Performance</h3>
+    <div class="table-wrap"><table><tr><th>Category</th><th>Qty</th><th>Revenue</th></tr>
+      {% for c in category_performance %}<tr><td>{{ c.menu_item__category__name }}</td><td>{{ c.total_quantity }}</td><td><strong>Rs. {{ c.total_revenue|floatformat:2 }}</strong></td></tr>
+      {% empty %}<tr><td colspan="3" class="text-muted">No data.</td></tr>{% endfor %}
+    </table></div>
+  </div>
+  <div class="card">
+    <h3><i class="fas fa-credit-card" style="color:var(--teal);"></i> Payment Methods</h3>
+    <div class="table-wrap"><table><tr><th>Method</th><th>Count</th><th>Total</th></tr>
+      {% for p in payment_methods %}<tr><td><span class="badge badge-primary">{{ p.payment_method }}</span></td><td>{{ p.count }}</td><td><strong>Rs. {{ p.total|floatformat:2 }}</strong></td></tr>
+      {% empty %}<tr><td colspan="3" class="text-muted">No data.</td></tr>{% endfor %}
+    </table></div>
+  </div>
+</div>
+
+<div class="card">
+  <h3><i class="fas fa-store" style="color:var(--primary);"></i> Branch Revenue</h3>
+  <div class="table-wrap"><table><tr><th>Branch</th><th>Bills</th><th>Total</th><th>Avg</th></tr>
+    {% for b in branch_revenue %}<tr><td><strong>{{ b.session__table__floor__branch__name }}</strong></td><td>{{ b.count }}</td><td>Rs. {{ b.total|floatformat:2 }}</td><td>Rs. {{ b.avg|floatformat:2 }}</td></tr>
+    {% empty %}<tr><td colspan="4" class="text-muted">No data.</td></tr>{% endfor %}
+  </table></div>
+</div>
+{% endblock %}

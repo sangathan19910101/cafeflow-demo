@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load roles %}
+
+{% block title %}
+Categories
+{% endblock %}
+{% block page_icon %}list{% endblock %}
+{% block page_title %}Menu Categories{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <h2>Menu Categories</h2>
+
+    {% if request.user|has_any_group:"Admin,Manager" %}
+    <a href="{% url 'create_category' %}" class="btn btn-success">
+        + Create Category
+    </a>
+    {% endif %}
+
+</div>
+
+<div class="card">
+
+    {% if categories %}
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Status</th>
+
+                {% if request.user|has_any_group:"Admin,Manager" %}
+                <th width="220">Actions</th>
+                {% endif %}
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for category in categories %}
+
+            <tr>
+
+                <td>{{ category.name }}</td>
+
+                <td>
+
+                    {% if category.is_active %}
+                    <span class="badge badge-success">
+                        Active
+                    </span>
+                    {% else %}
+                    <span class="badge badge-danger">
+                        Inactive
+                    </span>
+                    {% endif %}
+
+                </td>
+
+                {% if request.user|has_any_group:"Admin,Manager" %}
+                <td>
+
+                    <div class="action-group">
+
+                        <a href="{% url 'edit_category' category.id %}" class="btn btn-primary">
+                            Edit
+                        </a>
+
+                        {% if category.is_active %}
+                        <a href="{% url 'toggle_category' category.id %}" class="btn btn-danger">
+                            Deactivate
+                        </a>
+                        {% else %}
+                        <a href="{% url 'toggle_category' category.id %}" class="btn btn-success">
+                            Activate
+                        </a>
+                        {% endif %}
+
+                    </div>
+
+                </td>
+                {% endif %}
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% else %}
+
+    <p>No categories found.</p>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

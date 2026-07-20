@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}
+Create Floor
+{% endblock %}
+{% block page_icon %}plus{% endblock %}
+{% block page_title %}Create Floor{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h2>Create Floor</h2>
+</div>
+
+<div class="card">
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button
+            type="submit"
+            class="btn btn-success"
+        >
+            Save Floor
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

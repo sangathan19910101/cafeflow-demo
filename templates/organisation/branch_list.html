@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}
+Branches
+{% endblock %}
+{% block page_icon %}store{% endblock %}
+{% block page_title %}Branches{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h2>Branches</h2>
+  <a href="{% url 'create_branch' %}" class="btn btn-success"><i class="fas fa-plus"></i> Create Branch</a>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Address</th>
+          <th>Phone</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for branch in branches %}
+        <tr>
+          <td><strong>{{ branch.name }}</strong></td>
+          <td>{{ branch.address|default:"-" }}</td>
+          <td>{{ branch.phone|default:"-" }}</td>
+          <td>
+            {% if branch.is_active %}
+            <span class="badge badge-success">Active</span>
+            {% else %}
+            <span class="badge badge-danger">Inactive</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="action-group">
+              <a href="{% url 'edit_branch' branch.id %}" class="btn btn-primary btn-sm">Edit</a>
+              {% if branch.is_active %}
+              <a href="{% url 'toggle_branch' branch.id %}" class="btn btn-danger btn-sm">Deactivate</a>
+              {% else %}
+              <a href="{% url 'toggle_branch' branch.id %}" class="btn btn-success btn-sm">Activate</a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="text-muted">No branches found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

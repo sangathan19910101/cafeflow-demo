@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Start Session{% endblock %}
+{% block page_icon %}chair{% endblock %}
+{% block page_title %}Start a Session{% endblock %}
+{% block content %}
+<div class="page-header"><h2>Select Floor & Table</h2><a href="{% url 'session_list' %}" class="btn btn-outline">Active Sessions</a></div>
+{% for floor in floors %}
+<div class="card">
+  <h3>{{ floor.branch.name }} - {{ floor.name }} <small class="text-muted">({{ floor.tables.all|length }} tables)</small></h3>
+  <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;">
+    {% for table in floor.tables.all %}
+    {% if not table.is_deleted %}
+    <div style="border:1px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center;min-width:120px;background:{% if table.status == 'AVAILABLE' %}var(--success-light){% elif table.status == 'OCCUPIED' %}var(--danger-light){% elif table.status == 'RESERVED' %}var(--warning-light){% else %}#f1f5f9{% endif %};">
+      <strong>{{ table.name }}</strong><br>
+      <small>Cap: {{ table.capacity }}</small><br>
+      <span class="badge {% if table.status == 'AVAILABLE' %}badge-success{% elif table.status == 'OCCUPIED' %}badge-danger{% elif table.status == 'RESERVED' %}badge-warning{% else %}badge-gray{% endif %}">{{ table.get_status_display }}</span><br>
+      {% if table.status == 'AVAILABLE' %}
+      <form method="post" action="{% url 'start_session' table.id %}" style="margin-top:6px;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success btn-sm">Start Session</button>
+      </form>
+      {% elif table.status == 'OCCUPIED' %}
+      {% with table.sessions.all as sessions %}
+      {% for s in sessions %}{% if s.status == 'OPEN' %}<a href="{% url 'session_detail' s.id %}" class="btn btn-primary btn-sm" style="margin-top:6px;">View Session</a>{% endif %}{% endfor %}
+      {% endwith %}
+      {% endif %}
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+</div>
+{% empty %}
+<div class="card"><p class="text-muted">No floors available. Please create a floor and tables first.</p></div>
+{% endfor %}
+{% endblock %}

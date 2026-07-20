@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Add Feedback{% endblock %}
+{% block page_icon %}star{% endblock %}
+{% block page_title %}Add Feedback - {{ customer.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Feedback for {{ customer.name }}</h2>
+  <a href="{% url 'customer_detail' customer.id %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+<div class="card" style="max-width:520px;">
+<form method="post">
+  {% csrf_token %}
+  <div class="form-group">
+    <label>Rating</label>
+    <select name="rating" required>
+      <option value="">-- Select --</option>
+      <option value="5">5 - Excellent</option>
+      <option value="4">4 - Good</option>
+      <option value="3">3 - Average</option>
+      <option value="2">2 - Poor</option>
+      <option value="1">1 - Terrible</option>
+    </select>
+  </div>
+  <div class="form-group"><label>Category</label><input type="text" name="category" placeholder="e.g., Service, Food, Ambience"></div>
+  <div class="form-group"><label>Branch</label><select name="branch"><option value="">-- None --</option>{% for b in branches %}<option value="{{ b.id }}">{{ b.name }}</option>{% endfor %}</select></div>
+  <div class="form-group"><label>Comment</label><textarea name="comment" rows="3"></textarea></div>
+  <button type="submit" class="btn btn-success"><i class="fas fa-star"></i> Submit Feedback</button>
+</form>
+</div>
+{% endblock %}

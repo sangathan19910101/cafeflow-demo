@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load nepali_date %}
+{% load roles %}
+{% block title %}{{ customer.name }}{% endblock %}
+{% block page_icon %}user{% endblock %}
+{% block page_title %}{{ customer.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>{{ customer.name }} {% if customer.is_vip %}<span class="badge badge-warning">VIP</span>{% endif %}</h2>
+  <div class="action-group">
+    <a href="{% url 'edit_customer' customer.id %}" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i> Edit</a>
+    <a href="{% url 'add_feedback' customer.id %}" class="btn btn-teal btn-sm"><i class="fas fa-star"></i> Feedback</a>
+    <a href="{% url 'customer_communications' customer.id %}" class="btn btn-info btn-sm"><i class="fas fa-envelope"></i> Messages</a>
+    {% if not customer.loyalty %}
+    <a href="{% url 'enroll_loyalty' customer.id %}" class="btn btn-purple btn-sm"><i class="fas fa-crown"></i> Loyalty</a>
+    {% else %}
+    <a href="{% url 'customer_loyalty_transactions' customer.id %}" class="btn btn-warning btn-sm"><i class="fas fa-exchange-alt"></i> Points</a>
+    {% endif %}
+    {% if request.user|has_any_group:"Admin" %}
+    <a href="{% url 'delete_customer' customer.id %}" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi-card"><div class="kpi-icon" style="color:var(--primary);"><i class="fas fa-calendar-check"></i></div><h3>{{ customer.visit_count }}</h3><p>Visits</p></div>
+  <div class="kpi-card"><div class="kpi-icon" style="color:var(--success);"><i class="fas fa-coins"></i></div><h3>Rs. {{ customer.total_spent|floatformat:0 }}</h3><p>Total Spent</p></div>
+  {% if customer.loyalty %}
+  <div class="kpi-card"><div class="kpi-icon" style="color:var(--purple);"><i class="fas fa-crown"></i></div><h3>{{ customer.loyalty.points_balance }}</h3><p>Loyalty Points</p></div>
+  <div class="kpi-card"><div class="kpi-icon" style="color:var(--teal);"><i class="fas fa-layer-group"></i></div><h3>{{ customer.loyalty.program.name }}</h3><p>{{ customer.loyalty.program.tier }}</p></div>
+  {% endif %}
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h3>Contact</h3>
+    <table style="font-size:13px;">
+      <tr><td style="width:80px;color:var(--text-muted);">Phone</td><td><strong>{{ customer.phone }}</strong></td></tr>
+      <tr><td style="color:var(--text-muted);">Email</td><td><strong>{{ customer.email|default:"-" }}</strong></td></tr>
+      <tr><td style="color:var(--text-muted);">Address</td><td><strong>{{ customer.address|default:"-" }}</strong></td></tr>
+      <tr><td style="color:var(--text-muted);">Gender</td><td>{{ customer.get_gender_display|default:"-" }}</td></tr>
+      <tr><td style="color:var(--text-muted);">DOB</td><td>{{ customer.date_of_birth|default:"-" }}</td></tr>
+      <tr><td style="color:var(--text-muted);">Tags</td><td>{{ customer.tags|default:"-" }}</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h3>Stats</h3>
+    <table style="font-size:13px;">
+      <tr><td style="width:100px;color:var(--text-muted);">Last Visit</td><td><strong>{{ customer.last_visit|timesince|default:"Never" }} ago</strong></td></tr>
+      <tr><td style="color:var(--text-muted);">Preferred Branch</td><td><strong>{{ customer.preferred_branch.name|default:"-" }}</strong></td></tr>
+      <tr><td style="color:var(--text-muted);">VIP</td><td>{% if customer.is_vip %}<span class="badge badge-warning">Yes</span>{% else %}No{% endif %}</td></tr>
+      <tr><td style="color:var(--text-muted);">Blacklisted</td><td>{% if customer.is_blacklisted %}<span class="badge badge-danger">Yes</span>{% else %}No{% endif %}</td></tr>
+      {% if customer.loyalty %}
+      <tr><td style="color:var(--text-muted);">Lifetime Pts</td><td><strong>{{ customer.loyalty.lifetime_points }}</strong></td></tr>
+      {% endif %}
+    </table>
+  </div>
+</div>
+
+{% if customer.reservations.exists %}
+<div class="card">
+  <h3>Recent Reservations</h3>
+  <div class="table-wrap"><table><tr><th>Date</th><th>Branch</th><th>Guests</th><th>Status</th></tr>
+    {% for r in customer.reservations.all|slice:":10" %}
+    <tr><td>{{ r.reservation_date|bs_date }}</td><td>{{ r.branch.name }}</td><td>{{ r.guest_count }}</td><td><span class="badge {% if r.status == 'CONFIRMED' %}badge-primary{% elif r.status == 'SEATED' %}badge-success{% else %}badge-warning{% endif %}">{{ r.status }}</span></td></tr>
+    {% endfor %}
+  </table></div>
+</div>
+{% endif %}
+
+{% if customer.feedback.exists %}
+<div class="card">
+  <h3>Feedback</h3>
+  <div class="table-wrap"><table><tr><th>Rating</th><th>Category</th><th>Comment</th><th>Date</th></tr>
+    {% for fb in customer.feedback.all|slice:":10" %}
+    <tr><td>{{ fb.rating }}/5</td><td>{{ fb.category|default:"-" }}</td><td>{{ fb.comment|truncatechars:80 }}</td><td>{{ fb.created_at|date:"d M Y" }}</td></tr>
+    {% endfor %}
+  </table></div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load nepali_date %}
+{% block page_icon %}umbrella-beach{% endblock %}
+{% block page_title %}Leave Requests{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Leave Requests</h2>
+  <div class="action-group">
+    <a href="?status=PENDING" class="btn btn-warning btn-sm">Pending</a>
+    <a href="?status=APPROVED" class="btn btn-success btn-sm">Approved</a>
+    <a href="?status=REJECTED" class="btn btn-danger btn-sm">Rejected</a>
+    <a href="{% url 'leave_requests' %}" class="btn btn-outline btn-sm">All</a>
+    <a href="{% url 'create_leave_request' %}" class="btn btn-success"><i class="fas fa-plus"></i> Request Leave</a>
+  </div>
+</div>
+
+<div class="card">
+<div class="table-wrap">
+<table>
+  <tr>
+    <th>Employee</th><th>Type</th><th>Paid?</th><th>From</th><th>To</th><th>Days</th><th>Status</th><th>Approved By</th><th>Actions</th>
+  </tr>
+  {% for l in leaves %}
+  <tr>
+    <td><strong>{{ l.staff.user.get_full_name }}</strong><br><small class="text-muted">{{ l.staff.employee_id }}</small></td>
+    <td>{{ l.leave_type.name }}</td>
+    <td>
+      {% if l.leave_type.is_paid %}
+      <span class="badge badge-success"><i class="fas fa-check"></i> Paid</span>
+      {% else %}
+      <span class="badge badge-danger"><i class="fas fa-times"></i> Unpaid</span>
+      {% endif %}
+    </td>
+    <td>{{ l.start_date }}</td>
+    <td>{{ l.end_date }}</td>
+    <td>{{ l.days_count }}</td>
+    <td><span class="badge {% if l.status == 'APPROVED' %}badge-success{% elif l.status == 'PENDING' %}badge-warning{% elif l.status == 'REJECTED' %}badge-danger{% else %}badge-gray{% endif %}">{{ l.status }}</span></td>
+    <td>{% if l.approved_by %}{{ l.approved_by.get_full_name }}<br><small class="text-muted">{{ l.approved_at|date:"d M Y H:i" }}</small>{% else %}-{% endif %}</td>
+    <td>
+      {% if l.status == 'PENDING' %}
+      <form method="post" action="{% url 'approve_leave' l.id %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Approve</button>
+      </form>
+      {% endif %}
+    </td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="9" class="text-muted">No leave requests found.</td></tr>
+  {% endfor %}
+</table>
+</div>
+</div>
+{% endblock %}

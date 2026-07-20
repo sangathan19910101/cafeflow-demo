@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load nepali_date %}
+{% block title %}{{ profile.user.get_full_name }}{% endblock %}
+{% block page_icon %}user-tie{% endblock %}
+{% block page_title %}{{ profile.user.get_full_name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>{{ profile.user.get_full_name }} ({{ profile.employee_id }})</h2>
+  <div class="action-group">
+    <a href="{% url 'edit_staff' profile.id %}" class="btn btn-primary"><i class="fas fa-edit"></i> Edit</a>
+    <a href="{% url 'staff_list' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+  </div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-icon" style="color:var(--primary);"><i class="fas fa-coins"></i></div>
+    <h3>Rs. {{ profile.monthly_salary|floatformat:0 }}</h3>
+    <p>Monthly Salary</p>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon" style="color:var(--success);"><i class="fas fa-calendar-check"></i></div>
+    <h3>{{ month_working_days }}</h3>
+    <p>This Month Days</p>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon" style="color:var(--teal);"><i class="fas fa-clock"></i></div>
+    <h3>{{ month_hours }}</h3>
+    <p>This Month Hours</p>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon" style="color:var(--warning);"><i class="fas fa-hourglass-end"></i></div>
+    <h3>{{ month_overtime }}</h3>
+    <p>This Month OT</p>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+  <div class="card">
+    <h3><i class="fas fa-info-circle"></i> Details</h3>
+    <table style="font-size:13px;">
+      <tr><td style="width:140px;color:var(--text-muted);">Designation</td><td><strong>{{ profile.designation }}</strong></td></tr>
+      <tr><td style="color:var(--text-muted);">Department</td><td><strong>{{ profile.department.name|default:"-" }}</strong></td></tr>
+      <tr><td style="color:var(--text-muted);">Branch</td><td><strong>{{ profile.branch.name }}</strong></td></tr>
+      <tr><td style="color:var(--text-muted);">Status</td><td><span class="badge {% if profile.status == 'ACTIVE' %}badge-success{% elif profile.status == 'ON_LEAVE' %}badge-warning{% else %}badge-danger{% endif %}">{{ profile.status }}</span></td></tr>
+      <tr><td style="color:var(--text-muted);">Hire Date (BS)</td><td><strong>{{ profile.hire_date|bs_date }}</strong></td></tr>
+      <tr><td style="color:var(--text-muted);">Type</td><td><strong>{% if profile.is_full_time %}Full Time{% else %}Part Time{% endif %}</strong></td></tr>
+      <tr><td style="color:var(--text-muted);">Monthly Salary</td><td><strong>Rs. {{ profile.monthly_salary }}</strong></td></tr>
+      <tr><td style="color:var(--text-muted);">Hourly Rate</td><td><strong>Rs. {{ profile.hourly_rate }}</strong></td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h3><i class="fas fa-address-book"></i> Contact</h3>
+    <table style="font-size:13px;">
+      <tr><td style="width:140px;color:var(--text-muted);">Phone</td><td><strong>{{ profile.phone|default:"-" }}</strong></td></tr>
+      <tr><td style="color:var(--text-muted);">Email</td><td><strong>{{ profile.user.email|default:"-" }}</strong></td></tr>
+      <tr><td style="color:var(--text-muted);">Emergency Contact</td><td><strong>{{ profile.emergency_contact_name|default:"-" }} ({{ profile.emergency_contact_phone|default:"-" }})</strong></td></tr>
+      <tr><td style="color:var(--text-muted);">Groups</td><td>{% for g in profile.user.groups.all %}<span class="badge badge-primary">{{ g.name }}</span> {% empty %}-{% endfor %}</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <h3><i class="fas fa-history"></i> Recent Time Entries</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Clock In</th><th>Clock Out</th><th>Hours</th><th>Overtime</th><th>Approved</th></tr>
+    {% for e in recent_entries|slice:":15" %}
+    <tr>
+      <td>{{ e.clock_in }}</td>
+      <td>{{ e.clock_out|default:"-" }}</td>
+      <td>{{ e.total_hours }}</td>
+      <td>{{ e.overtime_hours }}</td>
+      <td>{% if e.is_approved %}<span class="badge badge-success">Yes</span>{% else %}<span class="badge badge-warning">No</span>{% endif %}</td>
+    </tr>
+    {% empty %}<tr><td colspan="5" class="text-muted">No time entries yet.</td></tr>
+    {% endfor %}
+  </table>
+  </div>
+</div>
+
+<div class="card">
+  <h3><i class="fas fa-calendar-week"></i> Upcoming Shifts</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Date</th><th>Shift</th><th>Time</th><th>Confirmed</th></tr>
+    {% for sh in shifts|slice:":15" %}
+    <tr>
+      <td>{{ sh.date|bs_date }}</td>
+      <td>{{ sh.template.name }}</td>
+      <td>{{ sh.template.start_time }} - {{ sh.template.end_time }}</td>
+      <td>{% if sh.is_confirmed %}<span class="badge badge-success">Yes</span>{% else %}<span class="badge badge-warning">No</span>{% endif %}</td>
+    </tr>
+    {% empty %}<tr><td colspan="4" class="text-muted">No upcoming shifts.</td></tr>
+    {% endfor %}
+  </table>
+  </div>
+</div>
+{% endblock %}

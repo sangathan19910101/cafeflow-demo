@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{ template.name }} - Data{% endblock %}
+{% block page_icon %}file-alt{% endblock %}
+{% block page_title %}{{ template.name }} Results{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>{{ template.name }} Results</h2>
+  <div class="action-group">
+    <a href="{% url 'download_report' template.id %}?format=EXCEL&period=monthly" class="btn btn-success"><i class="fas fa-download"></i> Download Excel</a>
+    <a href="{% url 'report_view' template.id %}" class="btn btn-outline">Back</a>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Summary ({{ start_date }} to {{ end_date }})</h3>
+  <div class="kpi-grid">
+    {% for key, value in data.items %}
+      {% if key != 'start_date' and key != 'end_date' and key != 'daily_breakdown' and key != 'day_end_summaries' and key != 'items' and key != 'entries' %}
+      <div class="kpi-card">
+        <h3>{% if value|floatformat:2 != value %}{{ value }}{% else %}Rs. {{ value|floatformat:0 }}{% endif %}</h3>
+        <p>{{ key|title|cut:"_" }}</p>
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+{% if data.daily_breakdown %}
+<div class="card">
+  <h3>Daily Breakdown</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Date</th><th>Sales</th><th>Orders</th></tr>
+      {% for row in data.daily_breakdown %}
+      <tr><td>{{ row.day }}</td><td>Rs. {{ row.total|floatformat:0 }}</td><td>{{ row.cnt }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% if data.day_end_summaries %}
+<div class="card">
+  <h3>Day End Summaries</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Branch</th><th>Date</th><th>Sales</th><th>Expenses</th><th>Net</th><th>Closed</th></tr>
+      {% for s in data.day_end_summaries %}
+      <tr><td>{{ s.branch__name }}</td><td>{{ s.summary_date }}</td><td>Rs. {{ s.total_sales }}</td><td>Rs. {{ s.total_expenses }}</td><td>Rs. {{ s.net_revenue }}</td><td>{% if s.is_closed %}<span class="badge badge-success">Yes</span>{% else %}<span class="badge badge-warning">No</span>{% endif %}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% if data.entries %}
+<div class="card">
+  <h3>Staff Time Entries</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Staff</th><th>Clock In</th><th>Clock Out</th><th>Hours</th><th>OT</th></tr>
+      {% for e in data.entries %}
+      <tr><td>{{ e.staff__user__first_name }} {{ e.staff__user__last_name }}</td><td>{{ e.clock_in }}</td><td>{{ e.clock_out|default:"-" }}</td><td>{{ e.total_hours }}</td><td>{{ e.overtime_hours }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

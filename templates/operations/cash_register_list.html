@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block page_icon %}cash-register{% endblock %}
+{% block page_title %}Cash Registers{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Cash Registers</h2>
+  <div class="action-group">
+    <a href="{% url 'open_register' %}" class="btn btn-success"><i class="fas fa-plus"></i> Open Register</a>
+  </div>
+</div>
+{% if open_count > 0 %}
+<div class="message message-warning"><i class="fas fa-exclamation-triangle"></i> {{ open_count }} register(s) currently open</div>
+{% endif %}
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <tr><th>Name</th><th>Branch</th><th>Opening Balance</th><th>Closing Balance</th><th>Status</th><th>Opened By</th><th>Opened At</th><th>Action</th></tr>
+      {% for r in registers %}
+      <tr>
+        <td><strong>{{ r.name }}</strong></td>
+        <td>{{ r.branch.name }}</td>
+        <td>Rs. {{ r.opening_balance|floatformat:2 }}</td>
+        <td>{% if r.closing_balance %}Rs. {{ r.closing_balance|floatformat:2 }}{% else %}-{% endif %}</td>
+        <td>{% if r.status == 'OPEN' %}<span class="badge badge-success">Open</span>{% else %}<span class="badge badge-gray">Closed</span>{% endif %}</td>
+        <td>{{ r.opened_by.get_full_name|default:"-" }}</td>
+        <td>{{ r.opened_at|date:"d M H:i" }}</td>
+        <td class="action-group">
+          <a href="{% url 'register_detail' r.id %}" class="btn btn-primary btn-sm">View</a>
+          {% if r.status == 'OPEN' %}<a href="{% url 'close_register' r.id %}" class="btn btn-danger btn-sm">Close</a>{% endif %}
+        </td>
+      </tr>
+      {% empty %}<tr><td colspan="8" class="text-muted">No cash registers.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Create Inventory Item{% endblock %}
+{% block page_icon %}warehouse{% endblock %}
+{% block page_title %}Create Inventory Item{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>New Inventory Item</h2>
+  <a href="{% url 'inventory_list' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+{% if not categories or not units %}
+<div class="message message-warning">
+  <i class="fas fa-exclamation-triangle"></i>
+  Before adding inventory items, you need to set up:
+  {% if not categories %}<a href="{% url 'inventory_category_create' %}" class="btn btn-warning btn-sm">Create a Category</a>{% endif %}
+  {% if not units %}<a href="{% url 'inventory_unit_create' %}" class="btn btn-warning btn-sm">Create a Unit</a>{% endif %}
+</div>
+{% endif %}
+
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" name="name" required>
+      </div>
+      <div class="form-group">
+        <label>Category {% if not categories %}<small style="color:var(--danger);">(none available)</small>{% endif %}</label>
+        {% if categories %}
+        <select name="category" required>
+          <option value="">-- Select Category --</option>
+          {% for c in categories %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
+        </select>
+        {% else %}
+        <a href="{% url 'inventory_category_create' %}" class="btn btn-warning btn-sm" style="margin-top:4px;"><i class="fas fa-plus"></i> Create Category First</a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Unit {% if not units %}<small style="color:var(--danger);">(none available)</small>{% endif %}</label>
+        {% if units %}
+        <select name="unit" required>
+          <option value="">-- Select Unit --</option>
+          {% for u in units %}<option value="{{ u.id }}">{{ u.name }} ({{ u.abbreviation }})</option>{% endfor %}
+        </select>
+        {% else %}
+        <a href="{% url 'inventory_unit_create' %}" class="btn btn-warning btn-sm" style="margin-top:4px;"><i class="fas fa-plus"></i> Create Unit First</a>
+        {% endif %}
+      </div>
+      <div class="form-group"><label>Branch</label><select name="branch" required><option value="">-- Select Branch --</option>{% for b in branches %}<option value="{{ b.id }}">{{ b.name }}</option>{% endfor %}</select></div>
+    </div>
+    <div class="grid-3">
+      <div class="form-group"><label>Quantity in Stock</label><input type="number" name="quantity_in_stock" step="0.01" min="0" value="0"></div>
+      <div class="form-group"><label>Low Stock Threshold</label><input type="number" name="low_stock_threshold" step="1" min="0" value="10"></div>
+      <div class="form-group"><label>Unit Cost</label><input type="number" name="unit_cost" step="0.01" min="0" value="0"></div>
+    </div>
+    <button type="submit" class="btn btn-success" {% if not categories or not units %}disabled{% endif %}><i class="fas fa-save"></i> Create Item</button>
+    <a href="{% url 'inventory_list' %}" class="btn btn-outline">Cancel</a>
+  </form>
+</div>
+{% endblock %}

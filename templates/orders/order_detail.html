@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% load roles %}
+{% block title %}Order Detail{% endblock %}
+{% block page_icon %}clipboard-list{% endblock %}
+{% block page_title %}Order Detail{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <h2>Order Detail</h2>
+
+    <a class="btn btn-primary" href="{% url 'order_list' %}">
+        ← Back to Orders
+    </a>
+
+</div>
+
+<div class="card">
+
+    <h3>Order Information</h3>
+
+    <p><strong>Status:</strong> {{ order.status }}</p>
+
+    <p><strong>Table:</strong> {{ order.session.table.name }}</p>
+
+    <p><strong>Floor:</strong> {{ order.session.table.floor.name }}</p>
+
+    <p><strong>Branch:</strong> {{ order.session.table.floor.branch.name }}</p>
+
+    <p><strong>Created:</strong> {{ order.created_at }}</p>
+
+    {% if order.submitted_at %}
+    <p><strong>Submitted:</strong> {{ order.submitted_at }}</p>
+    {% endif %}
+
+    {% if order.accepted_at %}
+    <p><strong>Accepted:</strong> {{ order.accepted_at }}</p>
+    {% endif %}
+
+    {% if order.rejected_at %}
+    <p><strong>Rejected:</strong> {{ order.rejected_at }}</p>
+    {% endif %}
+
+</div>
+
+<div class="card">
+
+    <h3>Actions</h3>
+
+    {% if order.status == "DRAFT" and request.user|has_any_group:"Admin,Manager,Waiter" %}
+
+    <div class="action-group">
+
+        <a class="btn btn-success" href="{% url 'add_order_item' order.id %}">
+            + Add Item
+        </a>
+
+        {% if order.items.exists %}
+        <form method="post" action="{% url 'submit_order' order.id %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-primary">Submit Order</button>
+        </form>
+        {% endif %}
+
+        <form method="post" action="{% url 'cancel_order' order.id %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Cancel Order</button>
+        </form>
+
+    </div>
+
+    {% endif %}
+
+    {% if order.status == "SUBMITTED" and request.user|has_any_group:"Admin,Manager,Kitchen" %}
+
+    <div class="action-group">
+
+        <form method="post" action="{% url 'accept_order' order.id %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-success">Accept Order</button>
+        </form>
+
+        <form method="post" action="{% url 'reject_order' order.id %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Reject Order</button>
+        </form>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+<div class="card">
+
+    <h3>Items</h3>
+
+    {% if order.items.exists %}
+
+    <table>
+
+        <tr>
+            <th>Item</th>
+            <th>Qty</th>
+            <th>Unit Price</th>
+            <th>Line Total</th>
+        </tr>
+
+        {% for item in order.items.all %}
+
+        <tr>
+
+            <td>{{ item.menu_item.name }}</td>
+
+            <td>{{ item.quantity }}</td>
+
+            <td>Rs. {{ item.price_snapshot }}</td>
+
+            <td>Rs. {{ item.line_total }}</td>
+
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+    {% else %}
+
+    <p>No items added yet.</p>
+
+    {% endif %}
+
+</div>
+
+<div class="card">
+
+    <h3>Order Total</h3>
+
+    <h2>Rs. {{ total }}</h2>
+
+</div>
+
+{% endblock %}

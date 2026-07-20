@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Create Stock Unit{% endblock %}
+{% block page_icon %}plus{% endblock %}
+{% block page_title %}Create Stock Unit{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>New Stock Unit</h2>
+  <a href="{% url 'inventory_unit_list' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="grid-2">
+      <div class="form-group"><label>Name</label><input type="text" name="name" placeholder="e.g. Kilogram" required></div>
+      <div class="form-group"><label>Abbreviation</label><input type="text" name="abbreviation" placeholder="e.g. kg" required></div>
+    </div>
+    <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Create Unit</button>
+    <a href="{% url 'inventory_unit_list' %}" class="btn btn-outline">Cancel</a>
+  </form>
+</div>
+{% endblock %}

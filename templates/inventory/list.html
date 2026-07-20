@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load nepali_date %}
+{% block title %}Inventory{% endblock %}
+{% block page_icon %}warehouse{% endblock %}
+{% block page_title %}Inventory{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Inventory</h2>
+  <div class="action-group" style="flex-wrap:wrap;">
+    <form method="get" style="display:flex;gap:8px;align-items:end;flex-wrap:wrap;">
+      <div class="form-group" style="margin:0;">
+        <label style="font-size:11px;">Category</label>
+        <select name="category" style="width:auto;" onchange="this.form.submit()">
+          <option value="">All</option>
+          {% for c in categories %}
+          <option value="{{ c.id }}" {% if request.GET.category == c.id|stringformat:'s' %}selected{% endif %}>{{ c.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group" style="margin:0;">
+        <label style="font-size:11px;">Branch</label>
+        <select name="branch" style="width:auto;" onchange="this.form.submit()">
+          <option value="">All</option>
+          {% for b in branches %}
+          <option value="{{ b.id }}" {% if request.GET.branch == b.id|stringformat:'s' %}selected{% endif %}>{{ b.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% if request.GET.category or request.GET.branch %}
+      <a href="{% url 'inventory_list' %}" class="btn btn-outline btn-sm" style="margin-bottom:2px;">Clear</a>
+      {% endif %}
+    </form>
+    {% if low_stock_count > 0 %}<span class="badge badge-danger">{{ low_stock_count }} low</span>{% endif %}
+    <a href="{% url 'inventory_category_list' %}" class="btn btn-outline btn-sm"><i class="fas fa-tags"></i> Categories</a>
+    <a href="{% url 'inventory_unit_list' %}" class="btn btn-outline btn-sm"><i class="fas fa-ruler"></i> Units</a>
+    <a href="{% url 'create_inventory_item' %}" class="btn btn-success"><i class="fas fa-plus"></i> Add Item</a>
+  </div>
+</div>
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <tr>
+        <th>Name</th><th>Category</th><th>Stock</th><th>Threshold</th><th>Unit</th><th>Branch</th><th>Status</th>
+      </tr>
+      {% for item in items %}
+      <tr>
+        <td><a href="{% url 'inventory_detail' item.id %}"><strong>{{ item.name }}</strong></a></td>
+        <td>{{ item.category.name }}</td>
+        <td>{{ item.quantity_in_stock }}</td>
+        <td>{{ item.low_stock_threshold }}</td>
+        <td>{{ item.unit.abbreviation }}</td>
+        <td>{{ item.branch.name }}</td>
+        <td>{% if item.is_low_stock %}<span class="badge badge-danger">Low</span>{% else %}<span class="badge badge-success">OK</span>{% endif %}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="text-muted">No inventory items found.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load nepali_date %}
+{% block title %}Reservations{% endblock %}
+{% block page_icon %}calendar-check{% endblock %}
+{% block page_title %}Reservations{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Reservations &amp; Waitlist</h2>
+  <a href="{% url 'create_reservation' %}" class="btn btn-success"><i class="fas fa-plus"></i> Create Reservation</a>
+  <div class="action-group">
+    <a href="?status=PENDING" class="btn btn-warning btn-sm">Pending</a>
+    <a href="?status=CONFIRMED" class="btn btn-primary btn-sm">Confirmed</a>
+    <a href="?status=SEATED" class="btn btn-success btn-sm">Seated</a>
+    <a href="?date={% now 'Y-m-d' %}" class="btn btn-teal btn-sm">Today</a>
+    <a href="{% url 'reservation_list' %}" class="btn btn-outline btn-sm">All</a>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
+  <div class="card">
+    <h3><i class="fas fa-calendar-check"></i> Reservations ({{ reservations|length }})</h3>
+    <div class="table-wrap">
+    <table>
+      <tr><th>Customer</th><th>Phone</th><th>Date</th><th>Time</th><th>Guests</th><th>Branch</th><th>Status</th><th>Actions</th></tr>
+      {% for r in reservations %}
+      <tr>
+        <td><strong>{{ r.customer.name }}</strong></td>
+        <td>{{ r.customer.phone }}</td>
+        <td>{{ r.reservation_date|bs_date }}</td>
+        <td>{{ r.reservation_time }}</td>
+        <td>{{ r.guest_count }}</td>
+        <td>{{ r.branch.name }}</td>
+        <td><span class="badge {% if r.status == 'CONFIRMED' %}badge-primary{% elif r.status == 'SEATED' %}badge-success{% elif r.status == 'CANCELLED' %}badge-danger{% elif r.status == 'COMPLETED' %}badge-gray{% else %}badge-warning{% endif %}">{{ r.status }}</span></td>
+        <td class="action-group">
+          {% if r.status == 'PENDING' %}<a href="{% url 'confirm_reservation' r.id %}" class="btn btn-sm btn-success">Confirm</a>{% endif %}
+          {% if r.status == 'CONFIRMED' %}<a href="{% url 'mark_seated' r.id %}" class="btn btn-sm btn-primary">Seat</a>{% endif %}
+          {% if r.status != 'CANCELLED' and r.status != 'COMPLETED' %}
+          <form method="post" action="{% url 'cancel_reservation' r.id %}" style="display:inline;">
+            {% csrf_token %}<input type="text" name="reason" placeholder="Reason" style="width:80px;display:inline;padding:4px;font-size:11px;">
+            <button type="submit" class="btn btn-sm btn-danger">Cancel</button>
+          </form>{% endif %}
+        </td>
+      </tr>
+      {% empty %}<tr><td colspan="8" class="text-muted">No reservations found.</td></tr>
+      {% endfor %}
+    </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><i class="fas fa-list-ol"></i> Waitlist ({{ waitlist|length }})</h3>
+    {% for w in waitlist %}
+    <div style="border:1px solid var(--border);padding:12px;margin:8px 0;border-radius:8px;">
+      <strong>{{ w.customer.name }}</strong>
+      <p style="font-size:12px;margin:4px 0;">{{ w.guest_count }} guests | Waiting {{ w.created_at|timesince }}</p>
+      <a href="{% url 'notify_waitlist' w.id %}" class="btn btn-success btn-sm"><i class="fas fa-bell"></i> Notify Ready</a>
+    </div>
+    {% empty %}<p class="text-muted" style="padding:12px;">No one on the waitlist.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

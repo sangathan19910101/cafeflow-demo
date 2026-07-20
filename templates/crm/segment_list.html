@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Customer Segments{% endblock %}
+{% block page_icon %}layer-group{% endblock %}
+{% block page_title %}Customer Segments{% endblock %}
+{% block content %}
+<div class="page-header"><h2>Customer Segments</h2><a href="{% url 'create_segment' %}" class="btn btn-success"><i class="fas fa-plus"></i> Create Segment</a></div>
+<div class="card">
+<div class="table-wrap">
+<table><tr><th>Name</th><th>Description</th><th>Customers</th><th>Active</th><th>Actions</th></tr>
+  {% for s in segments %}
+  <tr>
+    <td>{{ s.name }}</td>
+    <td>{{ s.description|truncatechars:100 }}</td>
+    <td>{{ s.customers.count }}</td>
+    <td>{% if s.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-danger">Inactive</span>{% endif %}</td>
+    <td><a href="{% url 'populate_segment' s.id %}" class="btn btn-primary btn-sm"><i class="fas fa-sync-alt"></i> Populate</a></td>
+  </tr>
+  {% empty %}<tr><td colspan="5">No segments defined.</td></tr>
+  {% endfor %}
+</table>
+</div>
+</div>
+{% endblock %}

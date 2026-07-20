@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ item.name }}{% endblock %}
+{% block page_icon %}warehouse{% endblock %}
+{% block page_title %}{{ item.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>{{ item.name }}</h2>
+  <div class="action-group">
+    <a href="{% url 'inventory_restock' item.id %}" class="btn btn-success"><i class="fas fa-plus-circle"></i> Restock</a>
+    <a href="{% url 'inventory_list' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+  </div>
+</div>
+<div class="grid-2">
+  <div class="card">
+    <h3>Item Details</h3>
+    <p><strong>Category:</strong> {{ item.category.name }}</p>
+    <p><strong>Unit:</strong> {{ item.unit.abbreviation }}</p>
+    <p><strong>In Stock:</strong> {{ item.quantity_in_stock }}</p>
+    <p><strong>Low Stock Threshold:</strong> {{ item.low_stock_threshold }}</p>
+    <p><strong>Branch:</strong> {{ item.branch.name }}</p>
+    <p><strong>Status:</strong> {% if item.is_low_stock %}<span class="badge badge-danger">Low Stock</span>{% else %}<span class="badge badge-success">In Stock</span>{% endif %}</p>
+  </div>
+  <div class="card">
+    <h3>Stock Movements</h3>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Type</th><th>Quantity</th><th>Notes</th><th>Date</th></tr>
+        {% for m in movements %}
+        <tr>
+          <td><span class="badge {% if m.movement_type == 'IN' %}badge-success{% elif m.movement_type == 'OUT' %}badge-danger{% elif m.movement_type == 'WASTAGE' %}badge-warning{% else %}badge-primary{% endif %}">{{ m.get_movement_type_display }}</span></td>
+          <td>{{ m.quantity }}</td>
+          <td>{{ m.notes|default:"-" }}</td>
+          <td>{{ m.created_at|date:"Y-m-d H:i" }}</td>
+        </tr>
+        {% empty %}<tr><td colspan="4" class="text-muted">No movements recorded.</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

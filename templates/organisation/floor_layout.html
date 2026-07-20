@@ -1,0 +1,971 @@
+{% extends "base.html" %}
+
+{% block title %}Floor Layout{% endblock %}
+{% block page_icon %}th{% endblock %}
+{% block page_title %}Floor Layout - {{ floor.name }}{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h2>{{ floor.name }} Layout</h2>
+  <a href="{% url 'table_list' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+<div class="card" style="margin-bottom:16px;">
+  <div class="grid-3">
+    <div><strong>Branch:</strong> {{ floor.branch.name }}</div>
+    <div><strong>Grid:</strong> {{ rows }} &times; {{ columns }}</div>
+    <div><strong>Tables:</strong> {{ total_tables }}</div>
+  </div>
+</div>
+
+<div id="layout-config" data-columns="{{ columns }}" data-rows="{{ rows }}"
+    data-assign-url="{% url 'assign_table_position' %}" data-csrf="{{ csrf_token }}"
+    data-detail-url="{% url 'get_table_details' '00000000-0000-0000-0000-000000000000' %}"
+    data-update-url="{% url 'update_table_ajax' '00000000-0000-0000-0000-000000000000' %}">
+</div>
+
+<style>
+    .floor-grid-wrap {
+        overflow: auto;
+        max-height: calc(100vh - 300px);
+        border: 2px solid var(--border);
+        border-radius: var(--radius-lg);
+        background: #f5f5f5;
+    }
+    .floor-grid {
+        display: grid;
+        gap: 6px;
+        padding: 10px;
+        background: #f5f5f5;
+
+        transform-origin: top left;
+
+        transition:
+            transform 0.2s ease;
+    }
+
+    .cell.drag-hover {
+        border: 3px dashed #0d6efd;
+        background: #dbeafe;
+    }
+
+    .cell:hover {
+        background: #eef5ff;
+    }
+
+    .summary-card,
+    .legend-card {
+        margin-bottom: 15px;
+        padding: 16px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+    }
+
+    .summary-grid {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .summary-item {
+        font-weight: 600;
+    }
+
+    .legend-list {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .coordinate-label {
+        position: absolute;
+        top: 3px;
+        left: 4px;
+
+        font-size: 10px;
+        color: #888;
+
+        pointer-events: none;
+    }
+
+    .coordinates-hidden .coordinate-label {
+        display: none;
+    }
+
+    .cell {
+        width: 120px;
+        height: 80px;
+        border: 1px solid #ddd;
+        background: white;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .table {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        font-weight: bold;
+        color: white;
+    }
+
+    .shape-square {
+        border-radius: 8px;
+    }
+
+    .shape-rectangle {
+        border-radius: 8px;
+    }
+
+    .shape-round {
+        border-radius: 50%;
+    }
+
+    .shape-bar {
+        border-radius: 20px;
+    }
+
+    .table-selector {
+        margin-right: 5px;
+    }
+
+    .AVAILABLE {
+        background: #28a745;
+    }
+
+    .OCCUPIED {
+        background: #dc3545;
+    }
+
+    .RESERVED {
+        background: #ffc107;
+        color: black;
+    }
+
+    .CLEANING {
+        background: #6c757d;
+    }
+
+    .designer-toolbar {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+        padding: 12px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+        flex-wrap: wrap;
+    }
+
+    .toolbar-btn {
+        padding: 8px 14px;
+        border: 1px solid #ccc;
+        background: #f8f9fa;
+        cursor: pointer;
+        border-radius: 4px;
+        font-weight: 600;
+    }
+
+    .capacity-badge {
+
+        position: absolute;
+
+        top: 3px;
+        right: 3px;
+
+        background: rgba(255, 255, 255, .9);
+
+        color: black;
+
+        font-size: 10px;
+
+        padding: 2px 5px;
+
+        border-radius: 10px;
+
+        font-weight: bold;
+    }
+
+    .table-panel {
+
+        position: fixed;
+
+        top: 100px;
+
+        right: 20px;
+
+        width: 300px;
+
+        background: white;
+
+        border: 1px solid #ddd;
+
+        border-radius: 8px;
+
+        padding: 15px;
+
+        box-shadow:
+            0 4px 12px rgba(0,
+                0,
+                0,
+                0.15);
+
+        display: none;
+
+        z-index: 1000;
+    }
+
+    .panel-field {
+
+        margin-bottom: 12px;
+    }
+
+    .panel-field label {
+
+        display: block;
+
+        font-weight: 600;
+
+        margin-bottom: 4px;
+    }
+
+    .panel-field input,
+    .panel-field select {
+
+        width: 100%;
+
+        padding: 6px;
+    }
+
+    .toolbar-btn:hover {
+        background: #e9ecef;
+    }
+</style>
+<h3>Select Table</h3>
+
+<div style="margin-bottom: 15px;">
+
+    {% for table in tables %}
+
+    <button type="button" class="table-selector" data-select-table="{{ table.id }}"
+        onclick="selectTable('{{ table.id }}')">
+        {{ table.name }}
+    </button>
+
+    {% endfor %}
+
+</div>
+
+<div class="summary-card">
+
+    <h4>Occupancy Summary</h4>
+
+    <div class="summary-grid">
+
+        <div class="summary-item">
+            🟢 Available: {{ available_count }}
+        </div>
+
+        <div class="summary-item">
+            🔴 Occupied: {{ occupied_count }}
+        </div>
+
+        <div class="summary-item">
+            🟡 Reserved: {{ reserved_count }}
+        </div>
+
+        <div class="summary-item">
+            ⚫ Cleaning: {{ cleaning_count }}
+        </div>
+
+        <div class="summary-item">
+            Total: {{ total_tables }}
+        </div>
+
+    </div>
+
+</div>
+<div class="legend-card">
+
+    <h4>Floor Legend</h4>
+
+    <div class="legend-list">
+
+        <div>
+            🟢 Available
+        </div>
+
+        <div>
+            🔴 Occupied
+        </div>
+
+        <div>
+            🟡 Reserved
+        </div>
+
+        <div>
+            ⚫ Cleaning
+        </div>
+
+    </div>
+
+</div>
+<div class="designer-toolbar">
+
+    <button type="button" onclick="zoomIn()" class="toolbar-btn">
+        Zoom +
+    </button>
+
+    <button type="button" onclick="zoomOut()" class="toolbar-btn">
+        Zoom -
+    </button>
+
+    <button type="button" onclick="resetZoom()" class="toolbar-btn">
+        Reset
+    </button>
+
+    <button type="button" onclick="toggleGrid()" class="toolbar-btn">
+        Grid On/Off
+    </button>
+    <button type="button" class="toolbar-btn" onclick="toggleCoordinates()"> Coordinates</button>
+    <button type="button" class="toolbar-btn" onclick="resetDesignerPreferences()"> Reset Designer</button>
+</div>
+<div id="designer-message" style="
+        display: none;
+        margin-bottom: 15px;
+        padding: 10px;
+        border-radius: 6px;
+        font-weight: bold;
+     ">
+</div>
+<div id="table-panel" class="table-panel">
+
+    <h3>Table Properties</h3>
+
+    <input type="hidden" id="panel-table-id">
+
+    <div class="panel-field">
+        <label>Name</label>
+        <input type="text" id="panel-name">
+    </div>
+
+    <div class="panel-field">
+        <label>Capacity</label>
+        <input type="number" id="panel-capacity">
+    </div>
+
+    <div class="panel-field">
+        <label>Status</label>
+
+        <select id="panel-status">
+
+            <option value="AVAILABLE">
+                AVAILABLE
+            </option>
+
+            <option value="OCCUPIED">
+                OCCUPIED
+            </option>
+
+            <option value="RESERVED">
+                RESERVED
+            </option>
+
+            <option value="CLEANING">
+                CLEANING
+            </option>
+
+        </select>
+
+    </div>
+
+    <div class="panel-field">
+        <label>
+            Active
+        </label>
+
+        <input type="checkbox" id="panel-active">
+    </div>
+
+    <div id="panel-position"></div>
+
+    <button type="button" onclick="saveTableDetails()" class="toolbar-btn">
+        Save
+    </button>
+
+</div>
+<div class="floor-grid-wrap">
+<div id="floor-grid" class="floor-grid">
+
+    {% for y in row_list %}
+    {% for x in col_list %}
+
+    <div class="cell" data-x="{{ x }}" data-y="{{ y }}" onclick="assignPosition({{ x }}, {{ y }})">
+
+        <span class="coordinate-label">
+            {{ x }},{{ y }}
+        </span>
+
+        {% for table in tables %}
+        {% if table.pos_x == x and table.pos_y == y %}
+
+        <div class="table {{ table.status }} shape-{{ table.shape|lower }}" draggable="true"
+            data-table-id="{{ table.id }}" onclick="event.stopPropagation();openTablePanel('{{ table.id }}')" style="cursor:pointer;">
+
+            <span class="capacity-badge">
+                {{ table.capacity }}
+            </span>
+
+            {{ table.name }}
+
+        </div>
+        {% endif %}
+        {% endfor %}
+
+    </div>
+
+    {% endfor %}
+    {% endfor %}
+
+</div>
+</div>
+<script>
+
+    const config = document.getElementById("layout-config");
+    const floorGrid = document.getElementById("floor-grid");
+    const messageBox = document.getElementById("designer-message");
+
+    const assignUrl = config.dataset.assignUrl;
+    const csrfToken = config.dataset.csrf;
+    const detailUrlTemplate = config.dataset.detailUrl;
+    const updateUrlTemplate = config.dataset.updateUrl;
+    function buildDetailUrl(id) { return detailUrlTemplate.replace("00000000-0000-0000-0000-000000000000", id); }
+    function buildUpdateUrl(id) { return updateUrlTemplate.replace("00000000-0000-0000-0000-000000000000", id); }
+
+    let selectedTableId = null;
+    let draggedTableId = null;
+
+    let zoomLevel =
+        parseFloat(
+            localStorage.getItem(
+                "designer_zoom"
+            )
+        ) || 1;
+
+    let gridVisible =
+        localStorage.getItem(
+            "designer_grid"
+        ) !== "false";
+
+    let coordinatesVisible =
+        localStorage.getItem(
+            "designer_coordinates"
+        ) !== "false";
+    floorGrid.style.gridTemplateColumns =
+        `repeat(${config.dataset.columns}, 120px)`;
+
+    floorGrid.style.gridTemplateRows =
+        `repeat(${config.dataset.rows}, 80px)`;
+
+    floorGrid.style.transform =
+        `scale(${zoomLevel})`;
+
+    if (!coordinatesVisible) {
+
+        floorGrid.classList.add(
+            "coordinates-hidden"
+        );
+    }
+
+    if (!gridVisible) {
+
+        document
+            .querySelectorAll(".cell")
+            .forEach(cell => {
+
+                cell.style.border = "none";
+
+            });
+    }
+    /* ==========================
+       MESSAGE SYSTEM
+    ========================== */
+
+    function showMessage(text, success = true) {
+
+        messageBox.style.display = "block";
+
+        messageBox.textContent = text;
+
+        messageBox.style.background =
+            success ? "#d4edda" : "#f8d7da";
+
+        messageBox.style.color =
+            success ? "#155724" : "#721c24";
+    }
+
+
+    /* ==========================
+       TOOLBAR
+    ========================== */
+    function zoomIn() {
+
+        zoomLevel += 0.1;
+
+        floorGrid.style.transform =
+            `scale(${zoomLevel})`;
+
+        localStorage.setItem(
+            "designer_zoom",
+            zoomLevel
+        );
+    }
+
+    function zoomOut() {
+
+        if (zoomLevel <= 0.5) {
+            return;
+        }
+
+        zoomLevel -= 0.1;
+
+        floorGrid.style.transform =
+            `scale(${zoomLevel})`;
+
+        localStorage.setItem(
+            "designer_zoom",
+            zoomLevel
+        );
+    }
+    function resetZoom() {
+
+        zoomLevel = 1;
+
+        floorGrid.style.transform =
+            "scale(1)";
+
+        localStorage.setItem(
+            "designer_zoom",
+            1
+        );
+    }
+    function toggleGrid() {
+
+        gridVisible = !gridVisible;
+
+        document
+            .querySelectorAll(".cell")
+            .forEach(cell => {
+
+                cell.style.border =
+                    gridVisible
+                        ? "1px solid #ddd"
+                        : "none";
+
+            });
+
+        localStorage.setItem(
+            "designer_grid",
+            gridVisible
+        );
+    }
+    function toggleCoordinates() {
+
+        coordinatesVisible =
+            !coordinatesVisible;
+
+        floorGrid.classList.toggle(
+            "coordinates-hidden"
+        );
+
+        localStorage.setItem(
+            "designer_coordinates",
+            coordinatesVisible
+        );
+    }
+    /* ==========================
+       TABLE SELECTION
+    ========================== */
+
+    function selectTable(id) {
+
+        selectedTableId = id;
+
+        document
+            .querySelectorAll(".table-selector")
+            .forEach(button => {
+                button.style.border = "";
+            });
+
+        const selectedButton =
+            document.querySelector(
+                `[data-select-table="${id}"]`
+            );
+
+        if (selectedButton) {
+
+            selectedButton.style.border =
+                "3px solid #0d6efd";
+        }
+    }
+
+
+    /* ==========================
+       GRID CLICK MOVE
+    ========================== */
+
+    function assignPosition(x, y) {
+
+        if (!selectedTableId) {
+
+            showMessage(
+                "Select a table first",
+                false
+            );
+
+            return;
+        }
+
+        moveTable(
+            selectedTableId,
+            x,
+            y
+        );
+    }
+
+
+    /* ==========================
+       AJAX MOVE
+    ========================== */
+
+    function moveTable(tableId, x, y) {
+
+        const targetCell =
+            document.querySelector(
+                `.cell[data-x="${x}"][data-y="${y}"]`
+            );
+
+        if (
+            targetCell &&
+            targetCell.querySelector(".table")
+        ) {
+
+            showMessage(
+                "Cell already occupied",
+                false
+            );
+
+            return;
+        }
+
+        fetch(assignUrl, {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type":
+                    "application/x-www-form-urlencoded",
+
+                "X-CSRFToken":
+                    csrfToken
+            },
+
+            body:
+                "table_id=" + tableId +
+                "&x=" + x +
+                "&y=" + y
+
+        })
+            .then(response => response.json())
+            .then(data => {
+
+                if (data.error) {
+
+                    showMessage(
+                        data.error,
+                        false
+                    );
+
+                    return;
+                }
+
+                updateTablePosition(
+                    tableId,
+                    x,
+                    y
+                );
+
+                showMessage(
+                    "Table moved successfully",
+                    true
+                );
+
+            });
+
+    }
+
+
+    /* ==========================
+       DOM UPDATE
+    ========================== */
+
+    function updateTablePosition(tableId, x, y) {
+
+        const tableElement =
+            document.querySelector(
+                `[data-table-id="${tableId}"]`
+            );
+
+        if (!tableElement) {
+            return;
+        }
+
+        const targetCell =
+            document.querySelector(
+                `.cell[data-x="${x}"][data-y="${y}"]`
+            );
+
+        if (!targetCell) {
+            return;
+        }
+
+        targetCell.appendChild(
+            tableElement
+        );
+
+        selectedTableId = null;
+        draggedTableId = null;
+
+        document
+            .querySelectorAll(".table-selector")
+            .forEach(button => {
+                button.style.border = "";
+            });
+    }
+
+
+    /* ==========================
+       DRAG SYSTEM
+    ========================== */
+
+    document
+        .querySelectorAll(".table")
+        .forEach(table => {
+
+            table.addEventListener(
+                "dragstart",
+                function () {
+
+                    draggedTableId =
+                        this.dataset.tableId;
+
+                }
+            );
+
+        });
+
+    document
+        .querySelectorAll(".cell")
+        .forEach(cell => {
+
+            cell.addEventListener(
+                "dragover",
+                function (event) {
+
+                    event.preventDefault();
+
+                }
+            );
+
+            cell.addEventListener(
+                "dragenter",
+                function () {
+
+                    this.classList.add(
+                        "drag-hover"
+                    );
+
+                }
+            );
+
+            cell.addEventListener(
+                "dragleave",
+                function () {
+
+                    this.classList.remove(
+                        "drag-hover"
+                    );
+
+                }
+            );
+
+            cell.addEventListener(
+                "drop",
+                function () {
+
+                    this.classList.remove(
+                        "drag-hover"
+                    );
+
+                    if (!draggedTableId) {
+                        return;
+                    }
+
+                    moveTable(
+                        draggedTableId,
+                        this.dataset.x,
+                        this.dataset.y
+                    );
+
+                }
+            );
+
+        });
+    function openTablePanel(tableId) {
+
+        fetch(buildDetailUrl(tableId))
+            .then(response => response.json())
+            .then(data => {
+
+                document
+                    .getElementById(
+                        "table-panel"
+                    )
+                    .style.display =
+                    "block";
+
+                document
+                    .getElementById(
+                        "panel-table-id"
+                    )
+                    .value =
+                    data.id;
+
+                document
+                    .getElementById(
+                        "panel-name"
+                    )
+                    .value =
+                    data.name;
+
+                document
+                    .getElementById(
+                        "panel-capacity"
+                    )
+                    .value =
+                    data.capacity;
+
+                document
+                    .getElementById(
+                        "panel-status"
+                    )
+                    .value =
+                    data.status;
+
+                document
+                    .getElementById(
+                        "panel-active"
+                    )
+                    .checked =
+                    data.is_active;
+
+                document
+                    .getElementById(
+                        "panel-position"
+                    )
+                    .innerHTML =
+                    "Position: (" +
+                    data.pos_x +
+                    "," +
+                    data.pos_y +
+                    ")";
+            });
+    }
+    function saveTableDetails() {
+
+        const tableId =
+            document.getElementById(
+                "panel-table-id"
+            ).value;
+
+        const formData =
+            new URLSearchParams();
+
+        formData.append(
+            "name",
+            document.getElementById(
+                "panel-name"
+            ).value
+        );
+
+        formData.append(
+            "capacity",
+            document.getElementById(
+                "panel-capacity"
+            ).value
+        );
+
+        formData.append(
+            "status",
+            document.getElementById(
+                "panel-status"
+            ).value
+        );
+
+        formData.append(
+            "is_active",
+            document.getElementById(
+                "panel-active"
+            ).checked
+        );
+
+        fetch(buildUpdateUrl(tableId), {
+                method: "POST",
+
+                headers: {
+                    "X-CSRFToken":
+                        csrfToken,
+                    "Content-Type":
+                        "application/x-www-form-urlencoded"
+                },
+
+                body: formData
+            }
+        )
+            .then(response => response.json())
+            .then(data => {
+
+                if (data.success) {
+
+                    showMessage(
+                        "Table updated successfully"
+                    );
+                }
+            });
+    }
+    function resetDesignerPreferences() {
+
+        localStorage.removeItem(
+            "designer_zoom"
+        );
+
+        localStorage.removeItem(
+            "designer_grid"
+        );
+
+        localStorage.removeItem(
+            "designer_coordinates"
+        );
+
+        location.reload();
+    }
+</script>
+
+{% endblock %}

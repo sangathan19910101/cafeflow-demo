@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Scheduled Reports{% endblock %}
+{% block page_icon %}clock{% endblock %}
+{% block page_title %}Scheduled Reports{% endblock %}
+{% block content %}
+<div class="page-header"><h2>Scheduled Reports</h2></div>
+<table><tr><th>Name</th><th>Report</th><th>Frequency</th><th>Format</th><th>Last Sent</th><th>Active</th></tr>
+  {% for s in schedules %}
+  <tr>
+    <td>{{ s.name }}</td>
+    <td>{{ s.report.name }}</td>
+    <td>{{ s.frequency }}</td>
+    <td>{{ s.format }}</td>
+    <td>{{ s.last_sent_at|timesince|default:"Never" }} ago</td>
+    <td>{% if s.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-danger">Inactive</span>{% endif %}</td>
+  </tr>
+  {% empty %}<tr><td colspan="6">No scheduled reports.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

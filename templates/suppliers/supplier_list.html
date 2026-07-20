@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Suppliers{% endblock %}
+{% block page_icon %}truck{% endblock %}
+{% block page_title %}Supplier Management{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Supplier Management</h2>
+  <div class="action-group">
+    <a href="?status=ACTIVE" class="btn btn-success btn-sm">Active</a>
+    <a href="{% url 'supplier_list' %}" class="btn btn-outline btn-sm">All</a>
+    <a href="{% url 'po_list' %}" class="btn btn-primary btn-sm">Purchase Orders</a>
+    <a href="{% url 'create_supplier' %}" class="btn btn-success"><i class="fas fa-plus"></i> Add Supplier</a>
+  </div>
+</div>
+<div class="card">
+<div class="table-wrap">
+<table><tr><th>Name</th><th>Company</th><th>Phone</th><th>Email</th><th>Payment Terms</th><th>Status</th><th>Action</th></tr>
+  {% for s in suppliers %}
+  <tr>
+    <td><strong>{{ s.name }}</strong></td>
+    <td>{{ s.company|default:"-" }}</td>
+    <td>{{ s.phone }}</td>
+    <td>{{ s.email|default:"-" }}</td>
+    <td>{{ s.payment_terms|default:"-" }}</td>
+    <td><span class="badge {% if s.status == 'ACTIVE' %}badge-success{% else %}badge-danger{% endif %}">{{ s.status }}</span></td>
+    <td><a href="{% url 'supplier_detail' s.id %}" class="btn btn-primary">View</a></td>
+  </tr>
+  {% empty %}<tr><td colspan="7">No suppliers.</td></tr>
+  {% endfor %}
+</table>
+</div>
+</div>
+{% endblock %}

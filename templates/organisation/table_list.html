@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Tables{% endblock %}
+{% block page_icon %}th{% endblock %}
+{% block page_title %}Tables{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Table Management</h2>
+  <div class="action-group">
+    <a href="{% url 'create_table' %}" class="btn btn-success"><i class="fas fa-plus"></i> Create Table</a>
+    <a href="{% url 'floor_list' %}" class="btn btn-primary"><i class="fas fa-th-large"></i> Floor Plans</a>
+  </div>
+</div>
+
+{% if floors %}
+<div class="card" style="margin-bottom:16px;">
+  <h3>Floor Layouts</h3>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    {% for f in floors %}
+    <a href="{% url 'floor_layout' f.id %}" class="btn btn-outline btn-sm">
+      <i class="fas fa-project-diagram"></i> {{ f.branch.name }} / {{ f.name }}
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <tr><th>Name</th><th>Floor</th><th>Capacity</th><th>Status</th><th>Active</th><th>Actions</th></tr>
+      {% for table in tables %}
+      <tr>
+        <td><strong>{{ table.name }}</strong></td>
+        <td>{{ table.floor.name }}</td>
+        <td>{{ table.capacity }}</td>
+        <td><span class="badge {% if table.status == 'AVAILABLE' %}badge-success{% elif table.status == 'OCCUPIED' %}badge-danger{% elif table.status == 'RESERVED' %}badge-warning{% else %}badge-gray{% endif %}">{{ table.status }}</span></td>
+        <td>{% if table.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-danger">Inactive</span>{% endif %}</td>
+        <td>
+          <div class="action-group">
+            <a href="{% url 'edit_table' table.id %}" class="btn btn-primary btn-sm">Edit</a>
+            {% if table.status == "AVAILABLE" %}
+            <form method="post" action="{% url 'start_session' table.id %}" style="display:inline;">{% csrf_token %}<button type="submit" class="btn btn-success btn-sm">Start Session</button></form>
+            {% elif table.status == "OCCUPIED" %}
+              {% if table.active_session %}
+              <a href="{% url 'session_detail' table.active_session.id %}" class="btn btn-primary btn-sm">Open Session</a>
+              {% else %}
+              <span class="badge badge-danger">Session Missing</span>
+              {% endif %}
+            {% elif table.status == "CLEANING" %}
+            <form method="post" action="{% url 'mark_table_available' table.id %}" style="display:inline;">{% csrf_token %}<button type="submit" class="btn btn-warning btn-sm">Mark Available</button></form>
+            {% elif table.status == "RESERVED" %}
+            <span class="badge badge-warning">Reserved</span>
+            {% endif %}
+            <form method="post" action="{% url 'toggle_table' table.id %}" style="display:inline;">{% csrf_token %}<button type="submit" class="btn btn-sm {% if table.is_active %}btn-danger{% else %}btn-success{% endif %}">{% if table.is_active %}Disable{% else %}Enable{% endif %}</button></form>
+          </div>
+        </td>
+      </tr>
+      {% empty %}<tr><td colspan="6" class="text-muted">No tables found.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}

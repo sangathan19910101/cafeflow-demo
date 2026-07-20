@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load nepali_date %}
+{% block page_icon %}tags{% endblock %}
+{% block page_title %}Create Leave Type{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>Create Leave Type</h2>
+  <a href="{% url 'leave_type_list' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+<div class="card">
+<form method="post">
+  {% csrf_token %}
+  <div class="form-group">
+    <label>Name *</label>
+    <input type="text" name="name" required placeholder="e.g., Annual Leave, Sick Leave, Personal Leave">
+  </div>
+  <div class="form-group">
+    <label>Description</label>
+    <textarea name="description" rows="2" placeholder="Brief description of this leave type..."></textarea>
+  </div>
+  <div class="grid-2">
+    <div class="form-group">
+      <label>Days Per Year</label>
+      <input type="number" name="days_per_year" min="0" value="0" placeholder="e.g., 18">
+      <small class="text-muted">Maximum allowed days per year. 0 = unlimited</small>
+    </div>
+    <div class="form-group">
+      <label>Leave Type</label>
+      <select name="is_paid_type" onchange="document.querySelector('input[name=is_paid]').checked = this.value === 'paid';" style="margin-bottom:8px;">
+        <option value="paid">Paid - Salary continues during leave</option>
+        <option value="unpaid">Unpaid - Salary is deducted for leave days</option>
+      </select>
+      <label style="display:flex;align-items:center;gap:8px;">
+        <input type="checkbox" name="is_paid" checked>
+        <span>Paid Leave (employee receives salary during leave)</span>
+      </label>
+    </div>
+  </div>
+  <div class="form-group">
+    <label>
+      <input type="checkbox" name="requires_approval" checked>
+      Requires manager approval
+    </label>
+  </div>
+  <div style="background:var(--primary-light);padding:12px 16px;border-radius:var(--radius);margin-bottom:16px;font-size:13px;">
+    <i class="fas fa-info-circle"></i> <strong>Rules:</strong>
+    <ul style="margin:8px 0 0 16px;">
+      <li><strong>Paid Leave:</strong> Employee continues to receive full salary during leave. Deducted from annual balance.</li>
+      <li><strong>Unpaid Leave:</strong> Daily salary is deducted from monthly payout for each leave day taken.</li>
+      <li><strong>Days Per Year:</strong> Sets the annual entitlement. Employees cannot exceed this limit for paid leaves.</li>
+    </ul>
+  </div>
+  <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Create Leave Type</button>
+</form>
+</div>
+{% endblock %}

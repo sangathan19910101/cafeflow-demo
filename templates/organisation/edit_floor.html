@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}
+Edit Floor
+{% endblock %}
+{% block page_icon %}edit{% endblock %}
+{% block page_title %}Edit Floor{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h2>Edit Floor</h2>
+</div>
+
+<div class="card">
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button type="submit" class="btn btn-primary">
+            Save Changes
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}
+Create Menu Item
+{% endblock %}
+{% block page_icon %}plus{% endblock %}
+{% block page_title %}Create Menu Item{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h2>Create Menu Item</h2>
+
+    <a href="{% url 'menu_list' %}" class="btn btn-primary">
+        Back to Menu
+    </a>
+</div>
+
+<div class="card">
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button type="submit" class="btn btn-success">
+            Save Item
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}
