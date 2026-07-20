@@ -3761,3 +3761,16 @@ INFO 2026-07-19 21:40:02,144 basehttp "POST /tables/18a54468-1555-4c1c-b57e-c087
 INFO 2026-07-19 21:40:02,232 basehttp "GET /tables/ HTTP/1.1" 200 21920
 INFO 2026-07-20 18:47:51,845 autoreload Watching for file changes with StatReloader
 INFO 2026-07-20 18:48:30,732 basehttp "HEAD / HTTP/1.1" 302 0
+INFO 2026-07-20 21:29:47,879 autoreload Watching for file changes with StatReloader
+INFO 2026-07-20 21:30:36,306 autoreload Watching for file changes with StatReloader
+INFO 2026-07-20 21:30:39,069 basehttp "GET / HTTP/1.1" 302 0
+INFO 2026-07-20 21:30:39,076 basehttp "GET /accounts/login/?next=/ HTTP/1.1" 200 3462
+WARNING 2026-07-20 21:30:39,389 log Not Found: /favicon.ico
+WARNING 2026-07-20 21:30:39,390 basehttp "GET /favicon.ico HTTP/1.1" 404 10481
+INFO 2026-07-20 21:30:44,827 basehttp "POST /accounts/login/?next=/ HTTP/1.1" 200 3576
+INFO 2026-07-20 21:36:12,316 autoreload Watching for file changes with StatReloader
+INFO 2026-07-20 21:36:14,643 basehttp "GET /accounts/login/?next=/ HTTP/1.1" 200 3462
+INFO 2026-07-20 21:36:27,180 basehttp "POST /accounts/login/?next=/ HTTP/1.1" 302 0
+INFO 2026-07-20 21:36:27,250 basehttp "GET / HTTP/1.1" 200 20952
+INFO 2026-07-20 21:36:27,308 basehttp "GET /static/css/cafeflow.css HTTP/1.1" 200 3179
+INFO 2026-07-20 21:36:27,308 basehttp "GET /static/js/cafeflow.js HTTP/1.1" 200 2048
